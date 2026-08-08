@@ -5,6 +5,26 @@
 
 ---
 
+## loop 16 — DB基盤（Prisma + SQLite）（2026-08-08）
+
+### やったこと
+- Prisma 7 + SQLite を導入。Prisma 7 は SQLite にドライバアダプタ必須のため **libSQL アダプタ**（@prisma/adapter-libsql + @libsql/client、プレビルドバイナリで native ビルド不要）を採用。
+- `prisma/schema.prisma`: Kimono モデル（sizes/colors/images は SQLite に配列型が無いため JSON 文字列で保持）。
+- `prisma migrate dev --name init` で初期マイグレーション＋DB作成。`prisma/seed.ts` で既存 data/kimonos.ts から10件投入（seeded: 10 確認）。
+- `lib/db.ts`: PrismaClient シングルトン（libSQL アダプタ、HMR対策のグローバル使い回し）。
+- `lib/kimono-repository.ts`: DB→ドメイン型 Kimono へ変換する取得関数群（getAll/ById/Featured/ByCategory/AllIds）。JSON列をパース。
+- package.json に postinstall(prisma generate)/db:migrate/db:seed/db:reset。.gitignore に dev.db・生成物、.env.example は追跡。
+
+### 結果
+- 商品データがDBに永続化され、サーバー側から取得できる土台が完成。ビルド成功。ページはまだ静的データ利用（次ループで切替）。
+
+### 気づき・次への申し送り
+- Prisma 7 は `prisma.config.ts` 構成、生成クライアントは `lib/generated/prisma`（gitignore、postinstallで生成）。アダプタのエクスポート名は `PrismaLibSql`。
+- DATABASE_URL は cwd(web/)基準の相対 `file:./dev.db` で CLI/ランタイム一致。
+- 次ループ: 商品ページ群をリポジトリ経由（async）に切替え、静的 data 依存をシード専用に限定。
+
+---
+
 ## loop 15 — 予約申込フォーム（2026-08-08）
 
 ### やったこと

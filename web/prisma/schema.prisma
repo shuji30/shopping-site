@@ -1,0 +1,29 @@
+// Prisma スキーマ。学習用に SQLite を使用（本番は datasource を差し替え）。
+// 参考: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+/// 着物商品
+model Kimono {
+  id          String   @id
+  name        String
+  category    String
+  price       Int
+  rentalDays  Int
+  /// JSON 文字列（SQLite は配列型を持たないため）
+  sizes       String
+  colors      String
+  images      String
+  material    String
+  description String
+  inStock     Boolean  @default(true)
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
