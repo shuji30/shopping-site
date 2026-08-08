@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getAllKimonos } from "@/data/kimonos";
+import { getAllKimonos, getKimonosByCategory } from "@/lib/kimono-repository";
 import { categories, getCategoryLabel } from "@/lib/categories";
 import { ProductCard } from "@/components/ProductCard";
 
@@ -21,9 +21,10 @@ export default async function KimonosPage({
   searchParams: Promise<{ category?: string }>;
 }) {
   const { category } = await searchParams;
-  const all = getAllKimonos();
   const active = categories.find((c) => c.id === category)?.id;
-  const items = active ? all.filter((k) => k.category === active) : all;
+  const items = active
+    ? await getKimonosByCategory(active)
+    : await getAllKimonos();
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">

@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { getFeaturedKimonos } from "@/data/kimonos";
+import { getFeaturedKimonos } from "@/lib/kimono-repository";
 import { categories } from "@/lib/categories";
 import { ProductCard } from "@/components/ProductCard";
 
-export default function Home() {
-  const featured = getFeaturedKimonos();
+export default async function Home() {
+  const featured = await getFeaturedKimonos();
 
   return (
     <>

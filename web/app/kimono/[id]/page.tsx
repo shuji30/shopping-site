@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getAllKimonos, getKimonoById } from "@/data/kimonos";
+import { getKimonoById, getAllKimonoIds } from "@/lib/kimono-repository";
 import { getCategoryLabel } from "@/lib/categories";
 import { KimonoImage } from "@/components/KimonoImage";
 import { AddToCartForm } from "@/components/AddToCartForm";
 
 /** 全商品を静的生成 */
-export function generateStaticParams() {
-  return getAllKimonos().map((k) => ({ id: k.id }));
+export async function generateStaticParams() {
+  const ids = await getAllKimonoIds();
+  return ids.map((id) => ({ id }));
 }
 
 export async function generateMetadata({
@@ -17,7 +18,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const kimono = getKimonoById(id);
+  const kimono = await getKimonoById(id);
   if (!kimono) return { title: "商品が見つかりません" };
   return { title: kimono.name, description: kimono.description };
 }
@@ -28,7 +29,7 @@ export default async function KimonoDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const kimono = getKimonoById(id);
+  const kimono = await getKimonoById(id);
   if (!kimono) notFound();
 
   const specs: { label: string; value: string }[] = [

@@ -5,6 +5,23 @@
 
 ---
 
+## loop 17 — 商品ページをDB経由へ切替（2026-08-08）
+
+### やったこと
+- `app/page.tsx`（async 化）/ `app/kimonos/page.tsx` / `app/kimono/[id]/page.tsx` の商品取得を `@/data/kimonos` から `@/lib/kimono-repository`（DB経由・async）へ差し替え。
+  - 一覧の絞り込みは getKimonosByCategory を使用。詳細の generateStaticParams は getAllKimonoIds（DBから）に変更。
+- `data/kimonos.ts` はシードの情報源として存置。
+
+### 結果
+- ビルド成功。詳細10件はDBから SSG、トップもDBデータで静的生成、一覧は動的にDB配信。
+- 検証: 起動サーバーに curl して一覧・カテゴリ絞り込み・詳細が商品名を返すことを確認（DB配信）。
+
+### 気づき・次への申し送り
+- SSGの詳細/トップはビルド時にDBを参照するため、デプロイ時は「マイグレーション＋シード後にビルド」する運用が必要（READMEに追記予定）。
+- 次ループ: 予約をDBに永続化（Reservation モデル + サーバー送信）。checkout をサーバーアクション/APIへ。
+
+---
+
 ## loop 16 — DB基盤（Prisma + SQLite）（2026-08-08）
 
 ### やったこと
