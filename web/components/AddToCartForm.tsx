@@ -4,23 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { Kimono } from "@/lib/types";
 import { useCart, makeCartItemId, type CartItem } from "@/lib/cart";
-
-/** ローカル日付を YYYY-MM-DD で返す */
-function toISODate(d: Date): string {
-  const tz = d.getTimezoneOffset() * 60000;
-  return new Date(d.getTime() - tz).toISOString().slice(0, 10);
-}
-
-function addDays(iso: string, days: number): string {
-  const d = new Date(`${iso}T00:00:00`);
-  d.setDate(d.getDate() + days);
-  return toISODate(d);
-}
-
-/** YYYY-MM-DD → YYYY/MM/DD */
-function formatJP(iso: string): string {
-  return iso.replaceAll("-", "/");
-}
+import { toISODate, rentalEndDate, formatJP } from "@/lib/date";
 
 /** 商品詳細の購入操作（サイズ・レンタル開始日を選んでカートに追加） */
 export function AddToCartForm({ kimono }: { kimono: Kimono }) {
@@ -35,7 +19,7 @@ export function AddToCartForm({ kimono }: { kimono: Kimono }) {
   const inCart = currentId ? items.some((i) => i.id === currentId) : false;
 
   const endDate = useMemo(
-    () => (startDate ? addDays(startDate, kimono.rentalDays - 1) : ""),
+    () => (startDate ? rentalEndDate(startDate, kimono.rentalDays) : ""),
     [startDate, kimono.rentalDays],
   );
 
