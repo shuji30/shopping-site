@@ -85,15 +85,14 @@ export function CartView() {
             ¥{total.toLocaleString()}
           </span>
         </div>
-        <button
-          type="button"
-          disabled
-          className="mt-6 w-full cursor-not-allowed rounded-full bg-kin/40 px-6 py-3 text-sm font-medium text-sumi/60"
+        <Link
+          href="/checkout"
+          className="mt-6 block w-full rounded-full bg-kin px-6 py-3 text-center text-sm font-medium text-sumi transition hover:bg-kin/90"
         >
-          予約手続きへ進む（準備中）
-        </button>
+          予約申込へ進む
+        </Link>
         <p className="mt-2 text-xs text-sumi/50">
-          ※ オンライン決済・予約確定は次のフェーズで実装予定です。
+          ※ 決済は行いません。お申込内容の確認までを行います。
         </p>
         <button
           type="button"
