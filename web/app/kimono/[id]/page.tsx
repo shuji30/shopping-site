@@ -1,0 +1,127 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { getAllKimonos, getKimonoById } from "@/data/kimonos";
+import { getCategoryLabel } from "@/lib/categories";
+import { KimonoImage } from "@/components/KimonoImage";
+
+/** 全商品を静的生成 */
+export function generateStaticParams() {
+  return getAllKimonos().map((k) => ({ id: k.id }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const kimono = getKimonoById(id);
+  if (!kimono) return { title: "商品が見つかりません" };
+  return { title: kimono.name, description: kimono.description };
+}
+
+export default async function KimonoDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const kimono = getKimonoById(id);
+  if (!kimono) notFound();
+
+  const specs: { label: string; value: string }[] = [
+    { label: "カテゴリ", value: getCategoryLabel(kimono.category) },
+    { label: "サイズ", value: kimono.sizes.join(" / ") },
+    { label: "色", value: kimono.colors.join("・") },
+    { label: "素材", value: kimono.material },
+    { label: "レンタル期間", value: `${kimono.rentalDays}日間` },
+  ];
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-10">
+      <nav className="text-sm text-sumi/60">
+        <Link href="/" className="hover:text-kon">
+          ホーム
+        </Link>
+        <span className="mx-2">/</span>
+        <Link href="/kimonos" className="hover:text-kon">
+          商品一覧
+        </Link>
+        <span className="mx-2">/</span>
+        <span className="text-sumi/80">{kimono.name}</span>
+      </nav>
+
+      <div className="mt-6 grid gap-10 md:grid-cols-2">
+        {/* 画像 */}
+        <div>
+          <KimonoImage
+            seed={kimono.images[0] ?? kimono.id}
+            motif={kimono.name.slice(0, 1)}
+            className="aspect-[3/4] w-full rounded-lg"
+          />
+        </div>
+
+        {/* 情報 */}
+        <div>
+          <span className="inline-block rounded bg-kon/90 px-3 py-1 text-xs text-washi">
+            {getCategoryLabel(kimono.category)}
+          </span>
+          <h1 className="mt-3 font-serif text-3xl leading-snug text-kon">
+            {kimono.name}
+          </h1>
+
+          <p className="mt-4 text-2xl font-semibold text-kon">
+            ¥{kimono.price.toLocaleString()}
+            <span className="ml-1 text-sm font-normal text-sumi/60">
+              / {kimono.rentalDays}日レンタル（税込）
+            </span>
+          </p>
+
+          <p className="mt-2 text-sm">
+            {kimono.inStock ? (
+              <span className="text-enji">● レンタル可能</span>
+            ) : (
+              <span className="text-sumi/60">● 現在貸出中</span>
+            )}
+          </p>
+
+          <p className="mt-6 leading-relaxed text-sumi/90">
+            {kimono.description}
+          </p>
+
+          {/* スペック */}
+          <dl className="mt-8 divide-y divide-kin/20 border-y border-kin/20">
+            {specs.map((s) => (
+              <div key={s.label} className="flex py-3 text-sm">
+                <dt className="w-28 shrink-0 text-sumi/60">{s.label}</dt>
+                <dd className="text-sumi/90">{s.value}</dd>
+              </div>
+            ))}
+          </dl>
+
+          {/* CTA（MVP: 予約・決済は準備中） */}
+          <button
+            type="button"
+            disabled
+            className="mt-8 w-full cursor-not-allowed rounded-full bg-kin/50 px-8 py-3 text-sm font-medium text-sumi/70"
+          >
+            レンタル予約（近日公開）
+          </button>
+          <p className="mt-2 text-xs text-sumi/50">
+            ※ オンライン予約・決済は準備中です。
+          </p>
+
+          <div className="mt-6">
+            <Link
+              href="/kimonos"
+              className="text-sm text-kon underline-offset-4 hover:underline"
+            >
+              ← 商品一覧に戻る
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
