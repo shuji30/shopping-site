@@ -1,26 +1,26 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* 和のデザイントークン（Tailwind v4 の @theme で utility を生成） */
+@theme {
+  /* 和紙のような温かみのある背景色 */
+  --color-washi: #faf7f2;
+  --color-washi-dark: #f1ece2;
+  /* 墨色（本文） */
+  --color-sumi: #241f1b;
+  /* 紺（プライマリ） */
+  --color-kon: #16324f;
+  --color-kon-light: #24507a;
+  /* 金（アクセント） */
+  --color-kin: #b0872f;
+  /* 臙脂（差し色） */
+  --color-enji: #9b2d30;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-noto-sans-jp), system-ui, sans-serif;
+  --font-serif: var(--font-noto-serif-jp), serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-washi);
+  color: var(--color-sumi);
+  font-family: var(--font-sans);
 }
