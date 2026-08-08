@@ -5,6 +5,23 @@
 
 ---
 
+## loop 12 — カートの基盤（Phase 2 開始）（2026-08-08）
+
+### やったこと
+- `lib/cart.tsx`: クライアント側カート（CartProvider / useCart）。localStorage で永続化。
+  - CartItem（商品・サイズ・開始日・日数・料金）、addItem/removeItem/clear、count/total。
+- `components/CartButton.tsx`: ヘッダーのカートアイコン＋件数バッジ。
+- `Header` に CartButton を追加、`layout.tsx` を CartProvider で全体ラップ。
+
+### 結果
+- カートの土台ができた。ビルド成功。バックエンド無しでも件数が保持される。
+
+### 気づき・次への申し送り
+- 方針: MVP段階はサーバー無しのためクライアント永続化。将来サーバー/認証連携時に Provider 内部を差し替える（useCart の口は維持）。
+- 次ループ: 商品詳細に「サイズ選択＋レンタル開始日選択＋カートに追加」フォームを追加。
+
+---
+
 ## loop 11 — README 整備（Phase 1 完了）（2026-08-08）
 
 ### やったこと

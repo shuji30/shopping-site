@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CartButton } from "./CartButton";
 
 /** サイト共通ヘッダー（ブランド＋グローバルナビ） */
 export function Header() {
@@ -26,6 +27,7 @@ export function Header() {
           >
             商品一覧
           </Link>
+          <CartButton />
         </nav>
       </div>
     </header>
