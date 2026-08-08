@@ -2,8 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useCart, type CartItem } from "@/lib/cart";
+import { useCart } from "@/lib/cart";
 import { formatJP, rentalEndDate } from "@/lib/date";
+import {
+  createReservation,
+  type ReservationLine,
+} from "@/lib/actions/reservation";
 
 type ReceiveMethod = "delivery" | "store";
 
@@ -29,16 +33,6 @@ const initialForm: FormState = {
   note: "",
 };
 
-/** 完了時に生成する受付番号（サンプル用の擬似採番） */
-function makeOrderNumber(): string {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  const rand = Math.floor(1000 + Math.random() * 9000);
-  return `MYB-${y}${m}${d}-${rand}`;
-}
-
 function validate(form: FormState): Errors {
   const errors: Errors = {};
   if (!form.name.trim()) errors.name = "お名前を入力してください。";
@@ -58,9 +52,11 @@ export function CheckoutView() {
   const { items, total, count, ready, clear } = useCart();
   const [form, setForm] = useState<FormState>(initialForm);
   const [errors, setErrors] = useState<Errors>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [done, setDone] = useState<{
     orderNumber: string;
-    items: CartItem[];
+    items: ReservationLine[];
     total: number;
     method: ReceiveMethod;
   } | null>(null);
@@ -69,16 +65,49 @@ export function CheckoutView() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const errs = validate(form);
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
-    // サンプルのため実際の送信は行わず、受付内容を確定表示してカートを空にする
-    const snapshot = { orderNumber: makeOrderNumber(), items, total, method: form.method };
-    clear();
-    setDone(snapshot);
-    if (typeof window !== "undefined") window.scrollTo({ top: 0 });
+
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const result = await createReservation({
+        name: form.name,
+        kana: form.kana,
+        email: form.email,
+        tel: form.tel,
+        method: form.method,
+        address: form.address,
+        note: form.note,
+        items: items.map((i) => ({
+          kimonoId: i.kimonoId,
+          size: i.size,
+          startDate: i.startDate,
+        })),
+      });
+      if (!result.ok || !result.orderNumber) {
+        setSubmitError(result.error ?? "申込に失敗しました。");
+        return;
+      }
+      // DB に保存された内容（サーバー確定値）で完了画面を表示
+      clear();
+      setDone({
+        orderNumber: result.orderNumber,
+        items: result.items ?? [],
+        total: result.total ?? 0,
+        method: form.method,
+      });
+      if (typeof window !== "undefined") window.scrollTo({ top: 0 });
+    } catch {
+      setSubmitError(
+        "通信エラーが発生しました。時間をおいて再度お試しください。",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   // 完了画面
@@ -94,8 +123,8 @@ export function CheckoutView() {
         </p>
 
         <ul className="mt-6 divide-y divide-kin/20 border-y border-kin/20">
-          {done.items.map((item) => (
-            <li key={item.id} className="flex justify-between py-3 text-sm">
+          {done.items.map((item, idx) => (
+            <li key={idx} className="flex justify-between py-3 text-sm">
               <span className="text-sumi/90">
                 {item.name}（{item.size} / {formatJP(item.startDate)}〜）
               </span>
@@ -266,14 +295,24 @@ export function CheckoutView() {
           />
         </div>
 
+        {submitError && (
+          <p className="rounded-md bg-enji/10 px-4 py-3 text-sm text-enji">
+            {submitError}
+          </p>
+        )}
         <button
           type="submit"
-          className="w-full rounded-full bg-kin px-8 py-3 text-sm font-medium text-sumi transition hover:bg-kin/90"
+          disabled={submitting}
+          className={
+            submitting
+              ? "w-full cursor-wait rounded-full bg-kin/50 px-8 py-3 text-sm font-medium text-sumi/60"
+              : "w-full rounded-full bg-kin px-8 py-3 text-sm font-medium text-sumi transition hover:bg-kin/90"
+          }
         >
-          この内容で申し込む
+          {submitting ? "送信中..." : "この内容で申し込む"}
         </button>
         <p className="text-xs text-sumi/50">
-          ※ 決済は行いません。送信後に受付内容を表示します（サンプル）。
+          ※ 決済は行いません。お申込内容はサーバーに保存されます（サンプル）。
         </p>
       </form>
 

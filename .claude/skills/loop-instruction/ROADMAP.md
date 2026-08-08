@@ -40,10 +40,10 @@
 - [ ] オンライン決済（Stripe 等）
 - [ ] 予約・配送・返却フロー
 - [ ] Capacitor による iOS/Android アプリ化
-- [~] バックエンド化＋データ永続化（Prisma + SQLite）（loop 16〜）
+- [x] バックエンド化＋データ永続化（Prisma + SQLite）（loop 16〜18）✅
   - [x] DB基盤（Prisma7 + SQLite + libSQLアダプタ / Kimonoスキーマ / マイグレーション / シード / 商品リポジトリ） (loop 16)
   - [x] 商品ページ群（トップ/一覧/詳細/カテゴリ）をDB経由（async）へ切替 (loop 17)
-  - [ ] 予約をDBに永続化（Reservation モデル + サーバー送信）
+  - [x] 予約をDBに永続化（Reservation モデル + サーバーアクション） (loop 18)
 
 ## 保留・要確認
 

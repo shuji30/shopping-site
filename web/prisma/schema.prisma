@@ -27,3 +27,33 @@ model Kimono {
   featured    Boolean  @default(false)
   createdAt   DateTime @default(now())
 }
+
+/// 予約申込（1件の申込）
+model Reservation {
+  id          String            @id @default(cuid())
+  orderNumber String            @unique
+  name        String
+  kana        String?
+  email       String
+  tel         String
+  /// "delivery" | "store"
+  method      String
+  address     String?
+  note        String?
+  total       Int
+  createdAt   DateTime          @default(now())
+  items       ReservationItem[]
+}
+
+/// 予約申込の明細（1点のレンタル）
+model ReservationItem {
+  id            String      @id @default(cuid())
+  reservationId String
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  kimonoId      String
+  name          String
+  size          String
+  startDate     String
+  rentalDays    Int
+  price         Int
+}
