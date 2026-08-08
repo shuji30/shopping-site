@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# きものレンタル 雅 — 着物レンタルECサイト
 
-## Getting Started
+振袖・訪問着・卒業袴・浴衣などをネットでレンタルできるECサイトです。
+レスポンシブWebとして構築し、将来的に Capacitor でiOS/Androidアプリ化することを想定しています。
 
-First, run the development server:
+> このリポジトリは開発中のサンプルです。掲載商品・価格・画像はダミーデータです。
+
+## 技術スタック
+
+- **Next.js 16**（App Router）+ **TypeScript**
+- **Tailwind CSS 4**（デザイントークンは `app/globals.css` の `@theme` に定義）
+- フォント: Noto Serif JP / Noto Sans JP（`next/font`）
+- 将来: **Capacitor**（Web コードをそのままアプリへ）
+
+## セットアップと起動
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd web
+npm install        # 依存関係のインストール
+npm run dev        # 開発サーバー（http://localhost:3000）
+npm run build      # 本番ビルド
+npm run start      # 本番ビルドの起動
+npm run lint       # ESLint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ディレクトリ構成
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+web/
+├─ app/
+│  ├─ layout.tsx          # 共通レイアウト（Header/Footer、フォント、メタデータ）
+│  ├─ page.tsx            # トップページ（ヒーロー/カテゴリ/注目商品）
+│  ├─ kimonos/page.tsx    # 商品一覧（カテゴリ絞り込み）
+│  └─ kimono/[id]/page.tsx# 商品詳細（SSG）
+├─ components/
+│  ├─ Header.tsx / Footer.tsx
+│  ├─ ProductCard.tsx     # 商品カード
+│  └─ KimonoImage.tsx     # 和柄プレースホルダ画像（実写真の代替）
+├─ lib/
+│  ├─ types.ts            # ドメイン型（Kimono など）
+│  └─ categories.ts       # カテゴリ定義
+└─ data/
+   └─ kimonos.ts          # サンプル商品データ
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 現在のスコープ（MVP）
 
-## Learn More
+商品カタログの表示のみ:
 
-To learn more about Next.js, take a look at the following resources:
+- ✅ トップページ
+- ✅ 商品一覧（カテゴリ絞り込み）
+- ✅ 商品詳細
+- ✅ スマホ / タブレット / PC のレスポンシブ対応
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 今後の予定（Phase 2 以降）
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+カート / レンタル期間選択 / 在庫カレンダー / ユーザー認証 / オンライン決済（Stripe 等） /
+予約・配送・返却フロー / データ永続化（DB・CMS）/ Capacitor でのアプリ化。
 
-## Deploy on Vercel
+## 画像について
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MVP では実写真の代わりに、`KimonoImage` がシード文字列から和柄プレースホルダを生成します。
+実写真が用意でき次第、`data/kimonos.ts` の `images` を実際の画像パス/URL に差し替え、
+`KimonoImage` を `next/image` などへ置き換えてください。
