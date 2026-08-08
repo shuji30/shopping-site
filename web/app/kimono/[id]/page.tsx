@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { getAllKimonos, getKimonoById } from "@/data/kimonos";
 import { getCategoryLabel } from "@/lib/categories";
 import { KimonoImage } from "@/components/KimonoImage";
+import { AddToCartForm } from "@/components/AddToCartForm";
 
 /** 全商品を静的生成 */
 export function generateStaticParams() {
@@ -100,19 +101,10 @@ export default async function KimonoDetailPage({
             ))}
           </dl>
 
-          {/* CTA（MVP: 予約・決済は準備中） */}
-          <button
-            type="button"
-            disabled
-            className="mt-8 w-full cursor-not-allowed rounded-full bg-kin/50 px-8 py-3 text-sm font-medium text-sumi/70"
-          >
-            レンタル予約（近日公開）
-          </button>
-          <p className="mt-2 text-xs text-sumi/50">
-            ※ オンライン予約・決済は準備中です。
-          </p>
+          {/* サイズ・レンタル開始日を選んでカートへ */}
+          <AddToCartForm kimono={kimono} />
 
-          <div className="mt-6">
+          <div className="mt-8">
             <Link
               href="/kimonos"
               className="text-sm text-kon underline-offset-4 hover:underline"
