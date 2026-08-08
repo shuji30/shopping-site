@@ -18,7 +18,7 @@
 
 ## Phase 1: MVP（カタログ表示のみ）
 
-- [ ] プロジェクト雛形のセットアップ（Next.js App Router + TypeScript + Tailwind CSS）
+- [x] プロジェクト雛形のセットアップ（Next.js App Router + TypeScript + Tailwind CSS） (loop 3)
 - [ ] 商品データモデルの定義（名前 / 画像 / レンタル料 / サイズ / カテゴリ / 素材・説明 / 在庫状況 など）
 - [ ] サンプル商品データ（JSON）の作成
 - [ ] 共通レイアウト（ヘッダー / フッター / ナビゲーション）とデザイントークン
