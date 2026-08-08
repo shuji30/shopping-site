@@ -29,8 +29,8 @@ export function ProductCard({ kimono }: { kimono: Kimono }) {
         <h3 className="font-serif text-base leading-snug text-sumi transition-colors group-hover:text-kon">
           {kimono.name}
         </h3>
-        <div className="mt-2 flex items-baseline justify-between">
-          <p className="text-kon">
+        <div className="mt-2 space-y-1">
+          <p className="whitespace-nowrap text-kon">
             <span className="text-lg font-semibold">
               ¥{kimono.price.toLocaleString()}
             </span>
@@ -38,7 +38,9 @@ export function ProductCard({ kimono }: { kimono: Kimono }) {
               / {kimono.rentalDays}日
             </span>
           </p>
-          <p className="text-xs text-sumi/60">{kimono.sizes.join(" / ")}</p>
+          <p className="text-xs text-sumi/60">
+            サイズ {kimono.sizes.join(" / ")}
+          </p>
         </div>
       </div>
     </Link>
