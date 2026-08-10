@@ -5,6 +5,23 @@
 
 ---
 
+## loop 19 — レイアウト分離（route group 導入）（2026-08-10）
+
+### やったこと
+- 管理画面を店舗フロントと別レイアウトにするため route group を導入。
+  - 店舗フロントのページ（page/kimonos/kimono/cart/checkout）を `app/(site)/` へ移動（git mv、URL は不変）。
+  - `app/(site)/layout.tsx`: Header/Footer を担当。
+  - ルート `app/layout.tsx`: html/body/フォント/CartProvider のみに整理（Header/Footer を除去）。
+
+### 結果
+- 表示・URL は変わらずビルド成功。以降 `app/admin/*` は独自レイアウトを持てる下地ができた。
+
+### 気づき・次への申し送り
+- 次ループ: 予約リポジトリ＋予約一覧ページ（/admin/reservations）と管理レイアウト。
+- 管理画面はデータを閲覧できるため、後続ループで簡易アクセス保護（Basic認証）を必ず入れる。
+
+---
+
 ## loop 18 — 予約をDBに永続化（バックエンド化 完了）（2026-08-08）
 
 ### やったこと
