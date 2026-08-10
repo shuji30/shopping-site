@@ -23,6 +23,8 @@ cp .env.example .env        # DATABASE_URL を設定
 npx prisma migrate dev      # DB作成＋マイグレーション適用
 npm run db:seed             # サンプル商品を投入
 
+# 管理画面(/admin)を使う場合は .env の ADMIN_PASSWORD を設定（未設定だと全拒否）
+
 npm run dev                 # 開発サーバー（http://localhost:3000）
 npm run build               # 本番ビルド（※事前に migrate + seed が必要）
 npm run start               # 本番ビルドの起動
@@ -48,7 +50,10 @@ web/
 │  ├─ kimonos/page.tsx     # 商品一覧（カテゴリ絞り込み）
 │  ├─ kimono/[id]/page.tsx # 商品詳細（SSG）
 │  ├─ cart/page.tsx        # カート
-│  └─ checkout/page.tsx    # 予約申込
+│  ├─ checkout/page.tsx    # 予約申込
+│  └─ (site)/layout.tsx    # 店舗フロント共通レイアウト（Header/Footer）
+├─ app/admin/             # 管理画面（Basic認証で保護。ダッシュボード/予約一覧/予約詳細）
+├─ middleware.ts          # /admin の Basic 認証
 ├─ components/             # Header/Footer/ProductCard/KimonoImage/Cart*/Checkout* など
 ├─ lib/
 │  ├─ types.ts             # ドメイン型（Kimono など）
@@ -73,6 +78,7 @@ web/
 - ✅ カート（サイズ・レンタル開始日の選択、localStorage 永続化）
 - ✅ 予約申込フォーム → **DB に保存**（決済はまだ無し）
 - ✅ 商品・予約のデータ永続化（Prisma + SQLite）
+- ✅ 管理画面（/admin）— 予約の一覧・詳細・集計（Basic認証で保護）
 
 ## 今後の予定
 

@@ -5,6 +5,24 @@
 
 ---
 
+## loop 22 — 管理画面のアクセス保護（管理画面 完了）（2026-08-10）
+
+### やったこと
+- `middleware.ts`: `/admin` 以下を HTTP Basic 認証で保護。資格情報は環境変数 ADMIN_USER / ADMIN_PASSWORD。
+  - ADMIN_PASSWORD 未設定時は **fail-closed（全拒否）** とし、誤公開を防止。
+- `.env` / `.env.example` に ADMIN_USER / ADMIN_PASSWORD を追加。README に管理画面と認証の記載を追記。
+
+### 結果
+- **管理画面（loop 19〜22）完了**。
+- 検証（curl）: 未認証/誤り→401、正しい資格情報→200、店舗フロント(/ , /kimonos)は影響なし→200。ビルド成功。
+
+### 気づき・次への申し送り
+- Basic認証は簡易保護。将来「ユーザー認証・マイページ」でロール付きの本格認証へ拡張余地。
+- ADMIN_PASSWORD は .env（gitignore）で管理し、コミットには含めない。.env.example はプレースホルダ。
+- 残タスク: 在庫カレンダー / ユーザー認証 / 決済(Stripe) / 配送・返却 / 本番DB移行 / Capacitorアプリ化。
+
+---
+
 ## loop 21 — 予約詳細＋ダッシュボード（2026-08-10）
 
 ### やったこと

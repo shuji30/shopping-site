@@ -44,11 +44,11 @@
   - [x] DB基盤（Prisma7 + SQLite + libSQLアダプタ / Kimonoスキーマ / マイグレーション / シード / 商品リポジトリ） (loop 16)
   - [x] 商品ページ群（トップ/一覧/詳細/カテゴリ）をDB経由（async）へ切替 (loop 17)
   - [x] 予約をDBに永続化（Reservation モデル + サーバーアクション） (loop 18)
-- [~] 管理画面（loop 19〜）
+- [x] 管理画面（loop 19〜22）✅
   - [x] レイアウト分離（route group (site) を導入し店舗フロントと管理を分ける） (loop 19)
   - [x] 予約一覧（/admin/reservations）＋管理レイアウト (loop 20)
   - [x] 予約詳細（/admin/reservations/[id]）＋ダッシュボード集計（/admin） (loop 21)
-  - [ ] 管理画面のアクセス保護（Basic認証 middleware）
+  - [x] 管理画面のアクセス保護（Basic認証 middleware） (loop 22)
 
 ## 保留・要確認
 
