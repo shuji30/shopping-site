@@ -1,0 +1,27 @@
+import "server-only";
+import { prisma } from "./db";
+
+/** 予約一覧（新しい順、明細件数付き） */
+export async function getReservations() {
+  return prisma.reservation.findMany({
+    orderBy: { createdAt: "desc" },
+    include: { _count: { select: { items: true } } },
+  });
+}
+
+/** 予約1件（明細付き） */
+export async function getReservationById(id: string) {
+  return prisma.reservation.findUnique({
+    where: { id },
+    include: { items: true },
+  });
+}
+
+/** ダッシュボード用の集計（件数・売上合計） */
+export async function getReservationStats() {
+  const [count, sum] = await Promise.all([
+    prisma.reservation.count(),
+    prisma.reservation.aggregate({ _sum: { total: true } }),
+  ]);
+  return { count, revenue: sum._sum.total ?? 0 };
+}

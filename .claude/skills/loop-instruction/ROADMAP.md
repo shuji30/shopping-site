@@ -46,7 +46,7 @@
   - [x] 予約をDBに永続化（Reservation モデル + サーバーアクション） (loop 18)
 - [~] 管理画面（loop 19〜）
   - [x] レイアウト分離（route group (site) を導入し店舗フロントと管理を分ける） (loop 19)
-  - [ ] 予約一覧（/admin/reservations）＋管理レイアウト
+  - [x] 予約一覧（/admin/reservations）＋管理レイアウト (loop 20)
   - [ ] 予約詳細（/admin/reservations/[id]）＋ダッシュボード集計（/admin）
   - [ ] 管理画面のアクセス保護（Basic認証 middleware）
 

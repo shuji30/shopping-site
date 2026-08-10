@@ -5,6 +5,23 @@
 
 ---
 
+## loop 20 — 予約一覧（管理画面）（2026-08-10）
+
+### やったこと
+- `lib/reservation-repository.ts`: getReservations（明細件数付き）/ getReservationById / getReservationStats。
+- `app/admin/layout.tsx`: 管理画面用ヘッダー（ダッシュボード/予約一覧/サイトへ）。
+- `app/admin/reservations/page.tsx`: 予約一覧テーブル（受付番号/日時/氏名/受取/点数/合計/詳細リンク）。`dynamic = "force-dynamic"` で常に最新表示。
+- `lib/datetime.ts`: 管理表示用の日時フォーマッタ。
+
+### 結果
+- 保存済みの予約が一覧表示されることを確認（curl で MYB-… / 山田 花子 を確認）。ビルド成功。
+
+### 気づき・次への申し送り
+- 次ループ: 予約詳細ページ（/admin/reservations/[id]）＋ダッシュボード（/admin 集計）。
+- その後: 管理画面のアクセス保護（Basic認証）。
+
+---
+
 ## loop 19 — レイアウト分離（route group 導入）（2026-08-10）
 
 ### やったこと
