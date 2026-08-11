@@ -10,7 +10,8 @@
 - **Next.js 16**（App Router）+ **TypeScript**
 - **Tailwind CSS 4**（デザイントークンは `app/globals.css` の `@theme` に定義）
 - フォント: Noto Serif JP / Noto Sans JP（`next/font`）
-- **Prisma 7 + SQLite**（ドライバアダプタに libSQL）でデータ永続化
+- **Prisma 7**（開発: SQLite / 本番: PostgreSQL）— `DATABASE_URL` のスキームでアダプタを自動選択
+  （本番移行手順は [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)）
 - カートはクライアント側（React Context + localStorage）
 - 将来: **Capacitor**（Web コードをそのままアプリへ）
 

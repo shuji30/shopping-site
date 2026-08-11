@@ -5,6 +5,23 @@
 
 ---
 
+## loop 30 — 本番DB（Postgres）対応の下準備（2026-08-11）
+
+### やったこと
+- `@prisma/adapter-pg` / `pg` / `@types/pg` を導入。
+- `lib/db.ts`: `DATABASE_URL` のスキームでアダプタを自動選択（postgres→PrismaPg / それ以外→PrismaLibSql）。SQLite（開発）は既定のまま。
+- `docs/DEPLOYMENT.md`: Postgres 切替手順（provider 変更・マイグレーション再ベースライン・env・シード・ビルド）とデータ移植性（JSON文字列は両DBで動作）・サーバーレスの接続プール注意を記載。README から参照。
+
+### 結果
+- 型チェック・ビルド成功。SQLite 経路のスモークテスト（一覧・詳細が商品を返す）を確認。
+- コードは provider 非依存化。**注意**: 本環境に Postgres サーバーが無いため、Postgres 実接続そのものは未実行（ドキュメントとコード準備まで）。実際の切替は provider を postgresql にして再マイグレーション/再生成が必要。
+
+### 気づき・次への申し送り
+- Prisma は provider がスキーマ静的なので、真の Postgres 稼働にはビルド時に provider=postgresql での再生成が必須（runtime のアダプタ切替だけでは方言が SQLite のまま）。この点を DEPLOYMENT.md に明記。
+- 残タスク: 決済(Stripe/要事業要件) / Capacitorアプリ化。
+
+---
+
 ## loop 29 — マイページ＋予約の紐付け（ユーザー認証 完了）（2026-08-11）
 
 ### やったこと
