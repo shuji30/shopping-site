@@ -5,6 +5,7 @@ import { getReservationById } from "@/lib/reservation-repository";
 import { formatDateTime } from "@/lib/datetime";
 import { formatJP, rentalEndDate, latestReturnDate } from "@/lib/date";
 import { StatusBadge } from "@/components/StatusBadge";
+import { StatusControl } from "@/components/StatusControl";
 
 export const metadata: Metadata = { title: "予約詳細（管理）" };
 export const dynamic = "force-dynamic";
@@ -57,6 +58,12 @@ export default async function AdminReservationDetailPage({
           </div>
         ))}
       </dl>
+
+      {/* ステータス変更 */}
+      <h2 className="mt-8 font-serif text-lg text-kon">ステータス変更</h2>
+      <div className="mt-3">
+        <StatusControl id={r.id} current={r.status} />
+      </div>
 
       {/* 明細 */}
       <h2 className="mt-8 font-serif text-lg text-kon">レンタル明細</h2>

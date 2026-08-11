@@ -5,6 +5,22 @@
 
 ---
 
+## loop 26 — 配送・返却フロー：ステータス更新（完了）（2026-08-11）
+
+### やったこと
+- `lib/actions/admin-reservation.ts`（"use server"）: updateReservationStatus。ステータス検証＋DB更新＋revalidatePath。/admin 配下から呼ばれ Basic 認証で保護。
+- `components/StatusControl.tsx`（client）: 受付/発送済み/返却済み/キャンセルの切替ボタン。useTransition＋router.refresh() で即時反映。
+- 管理詳細ページに「ステータス変更」セクションを追加。
+
+### 結果
+- **配送・返却フロー完了**（loop 25〜26）。E2E: 管理詳細で「発送済み」に変更→バッジ更新→一覧にも反映、を確認。ビルド成功。
+
+### 気づき・次への申し送り
+- ステータス更新は revalidatePath で一覧/詳細/ダッシュボードを再検証。予約照会（顧客側）も次アクセスで最新ステータスを表示。
+- 残タスク: アカウント制ログイン / 決済(Stripe) / 本番DB(Postgres)移行 / Capacitorアプリ化。
+
+---
+
 ## loop 25 — 配送・返却フロー：ステータス基盤と表示（2026-08-11）
 
 ### やったこと
