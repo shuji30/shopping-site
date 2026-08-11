@@ -5,6 +5,24 @@
 
 ---
 
+## loop 31 — テスト基盤＋ドメインロジックの単体テスト（2026-08-11）
+
+### やったこと
+- Vitest を導入（`vitest.config.mts`、`@` エイリアス、node 環境、`tests/**/*.test.ts`）。`npm test` を追加。
+- 純粋ロジックの単体テストを作成（外部依存なし）:
+  - `tests/date.test.ts`: addDays（月/年/うるう年跨ぎ）・rentalEndDate・latestReturnDate・formatJP・rangesOverlap（端接触/内包/離れ）。
+  - `tests/reservation-status.test.ts`: isReservationStatus・statusLabel・全ラベル存在。
+  - `tests/categories.test.ts`: 件数・ID一意・ラベル解決・未知ID。
+
+### 結果
+- **22件すべてパス**。ビルドも成功。バグの出やすい日付/期間/ステータスのロジックを回帰から保護。
+
+### 気づき・次への申し送り
+- server-only/prisma/next 依存のモジュール（auth/リポジトリ/アクション）は単体テスト対象外にし、純粋関数に絞って安定運用。必要なら将来 e2e/統合テストを別途。
+- 残タスク: 決済(Stripe/要事業要件) / Capacitorアプリ化 / さらなる整理（lint徹底・型強化など）。
+
+---
+
 ## loop 30 — 本番DB（Postgres）対応の下準備（2026-08-11）
 
 ### やったこと

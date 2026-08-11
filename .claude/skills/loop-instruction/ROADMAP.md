@@ -58,6 +58,10 @@
   - [x] 予約詳細（/admin/reservations/[id]）＋ダッシュボード集計（/admin） (loop 21)
   - [x] 管理画面のアクセス保護（Basic認証 middleware） (loop 22)
 
+## 品質・整備
+
+- [x] テスト基盤（Vitest）＋ドメインロジックの単体テスト（date/status/categories, 22件） (loop 31)
+
 ## 保留・要確認
 
 - 技術スタックは推奨（Next.js + Tailwind + 将来 Capacitor）で進行。変更希望があれば要相談。

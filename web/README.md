@@ -30,6 +30,7 @@ npm run dev                 # 開発サーバー（http://localhost:3000）
 npm run build               # 本番ビルド（※事前に migrate + seed が必要）
 npm run start               # 本番ビルドの起動
 npm run lint                # ESLint
+npm test                    # 単体テスト（Vitest）
 ```
 
 > **注意**: トップ・商品詳細はビルド時に DB を参照して静的生成します。
