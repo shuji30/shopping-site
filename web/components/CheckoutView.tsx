@@ -138,6 +138,17 @@ export function CheckoutView() {
           合計 ¥{done.total.toLocaleString()}
         </p>
 
+        <p className="mt-4 text-sm text-sumi/70">
+          受付番号とメールアドレスで、
+          <Link
+            href="/orders"
+            className="text-kon underline underline-offset-4"
+          >
+            予約照会
+          </Link>
+          からいつでも内容を確認できます。
+        </p>
+
         <p className="mt-6 rounded-md bg-washi-dark px-4 py-3 text-xs text-sumi/60">
           ※ これはサンプルサイトです。実際の予約確定・決済・確認メール送信は行われません。
         </p>

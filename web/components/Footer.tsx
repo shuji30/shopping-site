@@ -19,6 +19,9 @@ export function Footer() {
             <Link href="/kimonos" className="transition-colors hover:text-kon">
               商品一覧
             </Link>
+            <Link href="/orders" className="transition-colors hover:text-kon">
+              予約照会
+            </Link>
           </nav>
         </div>
         <p className="mt-8 text-xs text-sumi/50">
