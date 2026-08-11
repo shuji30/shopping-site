@@ -1,7 +1,13 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { hashPassword, createSession } from "@/lib/auth";
+import {
+  hashPassword,
+  verifyPassword,
+  createSession,
+  destroySession,
+} from "@/lib/auth";
 
 export interface AuthResult {
   ok: boolean;
@@ -41,3 +47,34 @@ export async function register(input: {
   await createSession(user.id);
   return { ok: true };
 }
+
+/** ログイン */
+export async function login(input: {
+  email: string;
+  password: string;
+}): Promise<AuthResult> {
+  const email = input.email?.trim().toLowerCase();
+  const password = input.password ?? "";
+  if (!email || !password) {
+    return { ok: false, error: "メールアドレスとパスワードを入力してください。" };
+  }
+  const user = await prisma.user.findUnique({ where: { email } });
+  // ユーザー不在でも照合を行い、存在有無を推測されにくくする
+  const valid =
+    !!user && verifyPassword(password, user.passwordHash);
+  if (!user || !valid) {
+    return {
+      ok: false,
+      error: "メールアドレスまたはパスワードが正しくありません。",
+    };
+  }
+  await createSession(user.id);
+  return { ok: true };
+}
+
+/** ログアウト（フォームの action として使用） */
+export async function logout(): Promise<void> {
+  await destroySession();
+  redirect("/");
+}
+
