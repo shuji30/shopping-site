@@ -61,6 +61,7 @@
 ## 品質・整備
 
 - [x] テスト基盤（Vitest）＋ドメインロジックの単体テスト（date/status/categories, 22件） (loop 31)
+- [x] Lint 一掃（ESLint エラー 0 / cart の永続復元に理由付き個別無効化） (loop 32)
 
 ## 保留・要確認
 

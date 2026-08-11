@@ -58,10 +58,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [ready, setReady] = useState(false);
 
-  // 初回マウント時に localStorage から復元
+  // 初回マウント時に localStorage から復元する。
+  // SSR とのハイドレーション不整合を避けるため、初期値は空にして
+  // クライアントのマウント後に一度だけ読み込む（依存配列は空でループしない）。
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 永続状態の初回読み込み（マウント時一回のみ）
       if (raw) setItems(JSON.parse(raw) as CartItem[]);
     } catch {
       // 壊れたデータは無視して空カートで開始
