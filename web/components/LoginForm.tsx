@@ -22,7 +22,7 @@ export function LoginForm() {
         setError(res.error ?? "ログインに失敗しました。");
         return;
       }
-      router.push("/");
+      router.push("/mypage");
       router.refresh();
     } catch {
       setError("通信エラーが発生しました。");

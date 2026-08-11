@@ -44,6 +44,8 @@ model Reservation {
   /// "reserved" | "shipped" | "returned" | "cancelled"
   status      String            @default("reserved")
   createdAt   DateTime          @default(now())
+  userId      String?
+  user        User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
   items       ReservationItem[]
 }
 
@@ -53,8 +55,9 @@ model User {
   email        String    @unique
   name         String
   passwordHash String
-  createdAt    DateTime  @default(now())
+  createdAt    DateTime      @default(now())
   sessions     Session[]
+  reservations Reservation[]
 }
 
 /// ログインセッション（トークンを httpOnly Cookie に保存し照合）

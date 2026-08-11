@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { isRangeAvailable } from "@/lib/availability";
+import { getCurrentUser } from "@/lib/auth";
 
 export interface ReservationItemInput {
   kimonoId: string;
@@ -96,9 +97,13 @@ export async function createReservation(
   const total = lines.reduce((sum, l) => sum + l.price, 0);
   const orderNumber = makeOrderNumber();
 
+  // ログイン中なら予約をユーザーに紐付ける
+  const user = await getCurrentUser();
+
   await prisma.reservation.create({
     data: {
       orderNumber,
+      userId: user?.id ?? null,
       name: input.name,
       kana: input.kana || null,
       email: input.email,

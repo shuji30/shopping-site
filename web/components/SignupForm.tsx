@@ -23,7 +23,7 @@ export function SignupForm() {
         setError(res.error ?? "登録に失敗しました。");
         return;
       }
-      router.push("/");
+      router.push("/mypage");
       router.refresh();
     } catch {
       setError("通信エラーが発生しました。");

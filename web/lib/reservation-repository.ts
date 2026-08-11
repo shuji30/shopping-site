@@ -17,6 +17,15 @@ export async function getReservationById(id: string) {
   });
 }
 
+/** 指定ユーザーの予約履歴（新しい順、明細付き） */
+export async function getReservationsByUser(userId: string) {
+  return prisma.reservation.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    include: { items: true },
+  });
+}
+
 /** ダッシュボード用の集計（件数・売上合計） */
 export async function getReservationStats() {
   const [count, sum] = await Promise.all([
