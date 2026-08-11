@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { lookupReservation, type LookupResult } from "@/lib/actions/lookup";
-import { formatJP, rentalEndDate } from "@/lib/date";
+import { formatJP, rentalEndDate, latestReturnDate } from "@/lib/date";
 import { formatDateTime } from "@/lib/datetime";
+import { StatusBadge } from "@/components/StatusBadge";
 
 export function OrderLookup() {
   const [orderNumber, setOrderNumber] = useState("");
@@ -87,7 +88,10 @@ export function OrderLookup() {
       <div>
         {r ? (
           <div className="rounded-lg border border-kin/20 bg-white/60 p-6">
-            <p className="font-serif text-lg text-kon">予約内容</p>
+            <div className="flex items-center justify-between">
+              <p className="font-serif text-lg text-kon">予約内容</p>
+              <StatusBadge status={r.status} />
+            </div>
             <dl className="mt-4 space-y-1 text-sm">
               <div className="flex">
                 <dt className="w-24 shrink-0 text-sumi/60">受付番号</dt>
@@ -111,6 +115,14 @@ export function OrderLookup() {
                   {r.method === "delivery" ? "配送" : "店頭受取"}
                 </dd>
               </div>
+              {latestReturnDate(r.items) && (
+                <div className="flex">
+                  <dt className="w-24 shrink-0 text-sumi/60">返却期限</dt>
+                  <dd className="text-sumi/90">
+                    {formatJP(latestReturnDate(r.items)!)}
+                  </dd>
+                </div>
+              )}
             </dl>
 
             <ul className="mt-4 divide-y divide-kin/20 border-y border-kin/20">

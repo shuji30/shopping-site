@@ -17,6 +17,7 @@ export interface LookupResult {
     orderNumber: string;
     name: string;
     method: "delivery" | "store";
+    status: string;
     createdAt: string; // ISO 文字列
     total: number;
     items: LookupItem[];
@@ -59,6 +60,7 @@ export async function lookupReservation(input: {
       orderNumber: r.orderNumber,
       name: r.name,
       method: r.method === "delivery" ? "delivery" : "store",
+      status: r.status,
       createdAt: r.createdAt.toISOString(),
       total: r.total,
       items: r.items.map((i) => ({

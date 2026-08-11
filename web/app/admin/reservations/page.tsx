@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getReservations } from "@/lib/reservation-repository";
 import { formatDateTime } from "@/lib/datetime";
+import { StatusBadge } from "@/components/StatusBadge";
 
 export const metadata: Metadata = { title: "予約一覧（管理）" };
 
@@ -28,6 +29,7 @@ export default async function AdminReservationsPage() {
                 <th className="px-4 py-3 font-medium">受付番号</th>
                 <th className="px-4 py-3 font-medium">申込日時</th>
                 <th className="px-4 py-3 font-medium">お名前</th>
+                <th className="px-4 py-3 font-medium">状態</th>
                 <th className="px-4 py-3 font-medium">受取</th>
                 <th className="px-4 py-3 font-medium">点数</th>
                 <th className="px-4 py-3 font-medium">合計</th>
@@ -45,6 +47,9 @@ export default async function AdminReservationsPage() {
                   </td>
                   <td className="px-4 py-3">{formatDateTime(r.createdAt)}</td>
                   <td className="px-4 py-3">{r.name}</td>
+                  <td className="px-4 py-3">
+                    <StatusBadge status={r.status} />
+                  </td>
                   <td className="px-4 py-3">
                     {r.method === "delivery" ? "配送" : "店頭"}
                   </td>

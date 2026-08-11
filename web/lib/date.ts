@@ -18,6 +18,17 @@ export function rentalEndDate(startISO: string, rentalDays: number): string {
   return addDays(startISO, rentalDays - 1);
 }
 
+/** 明細群のうち最も遅い返却日（＝返却期限）。明細が無ければ null。 */
+export function latestReturnDate(
+  items: { startDate: string; rentalDays: number }[],
+): string | null {
+  if (items.length === 0) return null;
+  return items
+    .map((i) => rentalEndDate(i.startDate, i.rentalDays))
+    .sort()
+    .at(-1) ?? null;
+}
+
 /** YYYY-MM-DD → YYYY/MM/DD */
 export function formatJP(iso: string): string {
   return iso.replaceAll("-", "/");

@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getReservationById } from "@/lib/reservation-repository";
 import { formatDateTime } from "@/lib/datetime";
-import { formatJP, rentalEndDate } from "@/lib/date";
+import { formatJP, rentalEndDate, latestReturnDate } from "@/lib/date";
+import { StatusBadge } from "@/components/StatusBadge";
 
 export const metadata: Metadata = { title: "予約詳細（管理）" };
 export const dynamic = "force-dynamic";
@@ -17,9 +18,12 @@ export default async function AdminReservationDetailPage({
   const r = await getReservationById(id);
   if (!r) notFound();
 
+  const returnDue = latestReturnDate(r.items);
+
   const info: { label: string; value: string }[] = [
     { label: "受付番号", value: r.orderNumber },
     { label: "申込日時", value: formatDateTime(r.createdAt) },
+    { label: "返却期限", value: returnDue ? formatJP(returnDue) : "—" },
     { label: "お名前", value: r.name },
     { label: "フリガナ", value: r.kana || "—" },
     { label: "メール", value: r.email },
@@ -39,7 +43,10 @@ export default async function AdminReservationDetailPage({
         <span className="text-sumi/80">{r.orderNumber}</span>
       </nav>
 
-      <h1 className="mt-4 font-serif text-2xl text-kon">予約詳細</h1>
+      <div className="mt-4 flex items-center gap-3">
+        <h1 className="font-serif text-2xl text-kon">予約詳細</h1>
+        <StatusBadge status={r.status} />
+      </div>
 
       {/* お客様情報 */}
       <dl className="mt-6 divide-y divide-kin/20 rounded-lg border border-kin/20 bg-white/60 px-5">

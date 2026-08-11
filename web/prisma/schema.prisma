@@ -41,6 +41,8 @@ model Reservation {
   address     String?
   note        String?
   total       Int
+  /// "reserved" | "shipped" | "returned" | "cancelled"
+  status      String            @default("reserved")
   createdAt   DateTime          @default(now())
   items       ReservationItem[]
 }
