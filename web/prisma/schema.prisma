@@ -47,6 +47,25 @@ model Reservation {
   items       ReservationItem[]
 }
 
+/// 会員ユーザー
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  sessions     Session[]
+}
+
+/// ログインセッション（トークンを httpOnly Cookie に保存し照合）
+model Session {
+  token     String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
 /// 予約申込の明細（1点のレンタル）
 model ReservationItem {
   id            String      @id @default(cuid())

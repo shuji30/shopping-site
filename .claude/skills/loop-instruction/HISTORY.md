@@ -5,6 +5,24 @@
 
 ---
 
+## loop 27 — 認証基盤＋会員登録（2026-08-11）
+
+### やったこと
+- User / Session モデルを追加（マイグレーション）。
+- `lib/auth.ts`（server-only）: Node `crypto` の scrypt でパスワードをソルト付きハッシュ化（"salt:hash"）＋ timingSafeEqual 照合。セッションはトークンをDB保存＋httpOnly Cookie。getCurrentUser / createSession / destroySession。
+- `lib/actions/auth.ts`: register（バリデーション：メール形式・パスワード8文字以上・重複チェック→作成＋自動ログイン）。
+- `components/SignupForm.tsx` / `app/(site)/signup/page.tsx`: 会員登録画面。
+
+### 結果
+- E2E: 登録→`/`へ遷移・httpOnly セッションCookie付与・DBにユーザー作成、パスワードは scrypt ハッシュ（平文でない）、重複拒否、を確認。確認用ユーザーはクリーンアップ。ビルド成功。
+
+### 気づき・次への申し送り
+- Playwright の `networkidle` 待機がこのページで詰まることがあり、`domcontentloaded` + `waitForURL` に変更して安定化（アプリ側は正常）。
+- SignupForm は `/login`・`/mypage` へリンク済み（次ループで実装）。
+- 次ループ: ログイン/ログアウト＋ヘッダーのログイン状態表示。
+
+---
+
 ## loop 26 — 配送・返却フロー：ステータス更新（完了）（2026-08-11）
 
 ### やったこと
