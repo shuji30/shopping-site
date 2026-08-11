@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/db";
+import { isRangeAvailable } from "@/lib/availability";
 
 export interface ReservationItemInput {
   kimonoId: string;
@@ -73,6 +74,14 @@ export async function createReservation(
     if (!k) return { ok: false, error: "取り扱いのない商品が含まれています。" };
     if (!k.inStock) {
       return { ok: false, error: `「${k.name}」は現在貸出中です。` };
+    }
+    // 既存予約との重複（二重予約）を防止
+    const available = await isRangeAvailable(k.id, it.startDate, k.rentalDays);
+    if (!available) {
+      return {
+        ok: false,
+        error: `「${k.name}」の選択期間はすでに予約済みです。別の日程をお選びください。`,
+      };
     }
     lines.push({
       kimonoId: k.id,

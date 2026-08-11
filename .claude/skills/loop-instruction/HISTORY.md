@@ -5,6 +5,25 @@
 
 ---
 
+## loop 23 — 在庫カレンダー（貸出中期間の抑止）（2026-08-10）
+
+### やったこと
+- `lib/date.ts`: DateRange 型と rangesOverlap（YYYY-MM-DD は辞書順比較で日付判定）を追加。
+- `lib/availability.ts`（server-only）: getReservedRanges（確定予約から貸出中期間を算出）/ isRangeAvailable（重複判定）。
+- 商品詳細（`app/(site)/kimono/[id]`）: 貸出中期間を取得して AddToCartForm に渡す。**動的レンダリング（force-dynamic）に変更**し在庫を常に最新反映。generateStaticParams は撤去。
+- `AddToCartForm`: 選択期間が貸出中と重複したら「貸出中」表示＋追加ボタン無効化。貸出中期間の一覧も表示。
+- `lib/actions/reservation.ts`: 申込時にサーバー側でも `isRangeAvailable` を再チェックし**二重予約を防止**。
+
+### 結果
+- E2E: 貸出中期間の表示、重複開始日→エラー＋追加不可、空き日付→追加可、を確認。ビルド成功。
+
+### 気づき・次への申し送り
+- 在庫は「確定予約」ベースで判定（カート内の未確定分は競合対象外）。単一ユーザーのMVPでは十分。
+- SSGからdynamicに変えたため詳細はDB参照が毎回入る。負荷が問題ならISR(revalidate)化を検討。
+- 残タスク: ユーザー認証 / 決済(Stripe) / 配送・返却 / 本番DB移行 / Capacitorアプリ化。
+
+---
+
 ## loop 22 — 管理画面のアクセス保護（管理画面 完了）（2026-08-10）
 
 ### やったこと

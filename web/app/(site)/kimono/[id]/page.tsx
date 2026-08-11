@@ -1,16 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getKimonoById, getAllKimonoIds } from "@/lib/kimono-repository";
+import { getKimonoById } from "@/lib/kimono-repository";
+import { getReservedRanges } from "@/lib/availability";
 import { getCategoryLabel } from "@/lib/categories";
 import { KimonoImage } from "@/components/KimonoImage";
 import { AddToCartForm } from "@/components/AddToCartForm";
 
-/** 全商品を静的生成 */
-export async function generateStaticParams() {
-  const ids = await getAllKimonoIds();
-  return ids.map((id) => ({ id }));
-}
+// 在庫（貸出中期間）を常に最新反映するため動的レンダリング
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -31,6 +29,8 @@ export default async function KimonoDetailPage({
   const { id } = await params;
   const kimono = await getKimonoById(id);
   if (!kimono) notFound();
+
+  const reservedRanges = await getReservedRanges(kimono.id);
 
   const specs: { label: string; value: string }[] = [
     { label: "カテゴリ", value: getCategoryLabel(kimono.category) },
@@ -103,7 +103,7 @@ export default async function KimonoDetailPage({
           </dl>
 
           {/* サイズ・レンタル開始日を選んでカートへ */}
-          <AddToCartForm kimono={kimono} />
+          <AddToCartForm kimono={kimono} reservedRanges={reservedRanges} />
 
           <div className="mt-8">
             <Link

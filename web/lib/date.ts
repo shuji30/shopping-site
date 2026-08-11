@@ -22,3 +22,22 @@ export function rentalEndDate(startISO: string, rentalDays: number): string {
 export function formatJP(iso: string): string {
   return iso.replaceAll("-", "/");
 }
+
+/** レンタル日付の範囲（両端含む、YYYY-MM-DD） */
+export interface DateRange {
+  start: string;
+  end: string;
+}
+
+/**
+ * 2つの日付範囲が重なるか（両端含む）。
+ * YYYY-MM-DD は辞書順比較で日付順になるため文字列比較で判定できる。
+ */
+export function rangesOverlap(
+  aStart: string,
+  aEnd: string,
+  bStart: string,
+  bEnd: string,
+): boolean {
+  return aStart <= bEnd && bStart <= aEnd;
+}

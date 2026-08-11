@@ -4,10 +4,23 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { Kimono } from "@/lib/types";
 import { useCart, makeCartItemId, type CartItem } from "@/lib/cart";
-import { toISODate, rentalEndDate, formatJP } from "@/lib/date";
+import {
+  toISODate,
+  rentalEndDate,
+  formatJP,
+  rangesOverlap,
+  type DateRange,
+} from "@/lib/date";
 
 /** 商品詳細の購入操作（サイズ・レンタル開始日を選んでカートに追加） */
-export function AddToCartForm({ kimono }: { kimono: Kimono }) {
+export function AddToCartForm({
+  kimono,
+  reservedRanges = [],
+}: {
+  kimono: Kimono;
+  /** 確定済み予約による貸出中期間 */
+  reservedRanges?: DateRange[];
+}) {
   const { addItem, items } = useCart();
   const [size, setSize] = useState<string>(kimono.sizes[0] ?? "");
   const [startDate, setStartDate] = useState<string>("");
@@ -23,7 +36,19 @@ export function AddToCartForm({ kimono }: { kimono: Kimono }) {
     [startDate, kimono.rentalDays],
   );
 
-  const canAdd = kimono.inStock && !!size && !!startDate && !inCart;
+  // 選択期間が貸出中期間と重複するか
+  const conflict = useMemo(
+    () =>
+      startDate && endDate
+        ? reservedRanges.some((r) =>
+            rangesOverlap(startDate, endDate, r.start, r.end),
+          )
+        : false,
+    [startDate, endDate, reservedRanges],
+  );
+
+  const canAdd =
+    kimono.inStock && !!size && !!startDate && !inCart && !conflict;
 
   function handleAdd() {
     if (!canAdd) return;
@@ -94,6 +119,23 @@ export function AddToCartForm({ kimono }: { kimono: Kimono }) {
             利用期間: {formatJP(startDate)} 〜 {formatJP(endDate)}（
             {kimono.rentalDays}日間）
           </p>
+        )}
+        {conflict && (
+          <p className="mt-2 text-sm text-enji">
+            選択された期間は貸出中です。別の開始日をお選びください。
+          </p>
+        )}
+        {reservedRanges.length > 0 && (
+          <div className="mt-3 rounded-md bg-washi-dark px-3 py-2 text-xs text-sumi/70">
+            <p className="font-medium">貸出中の期間</p>
+            <ul className="mt-1 space-y-0.5">
+              {reservedRanges.map((r, i) => (
+                <li key={i}>
+                  {formatJP(r.start)} 〜 {formatJP(r.end)}
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
       </div>
 
