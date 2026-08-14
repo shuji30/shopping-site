@@ -1,0 +1,164 @@
+import type { Kimono } from "@/lib/types";
+
+/**
+ * サンプル商品データ（MVP用）。
+ * 実際の在庫・写真が用意でき次第、DB やヘッドレスCMS へ移行し、画像も差し替える。
+ */
+export const kimonos: Kimono[] = [
+  {
+    id: "furisode-hanakanzashi",
+    name: "振袖 花簪（はなかんざし）",
+    category: "furisode",
+    price: 28000,
+    rentalDays: 3,
+    sizes: ["S", "M", "L"],
+    colors: ["赤", "金"],
+    material: "正絹",
+    description:
+      "牡丹と桜をあしらった華やかな赤地の振袖。成人式や前撮りにおすすめの定番柄です。",
+    images: ["furisode-hanakanzashi-1", "furisode-hanakanzashi-2"],
+    inStock: true,
+    featured: true,
+  },
+  {
+    id: "furisode-kinkessho",
+    name: "振袖 金彩雪輪（きんさいゆきわ）",
+    category: "furisode",
+    price: 32000,
+    rentalDays: 3,
+    sizes: ["M", "L"],
+    colors: ["紺", "金"],
+    material: "正絹",
+    description:
+      "深い紺地に金彩の雪輪が上品に映える一枚。落ち着いた華やかさを求める方に。",
+    images: ["furisode-kinkessho-1"],
+    inStock: true,
+    featured: true,
+  },
+  {
+    id: "houmongi-shikisai",
+    name: "訪問着 四季彩（しきさい）",
+    category: "houmongi",
+    price: 18000,
+    rentalDays: 4,
+    sizes: ["M", "L"],
+    colors: ["薄紫"],
+    material: "正絹",
+    description:
+      "四季の草花を淡い色調で描いた訪問着。結婚式のお呼ばれやお茶会に幅広く。",
+    images: ["houmongi-shikisai-1"],
+    inStock: true,
+    featured: true,
+  },
+  {
+    id: "houmongi-nadeshiko",
+    name: "訪問着 撫子（なでしこ）",
+    category: "houmongi",
+    price: 16000,
+    rentalDays: 4,
+    sizes: ["S", "M"],
+    colors: ["桜色"],
+    material: "正絹",
+    description: "やさしい桜色に撫子の柄。上品で優しい印象を与える一枚です。",
+    images: ["houmongi-nadeshiko-1"],
+    inStock: false,
+  },
+  {
+    id: "tomesode-kotobuki",
+    name: "黒留袖 寿鶴（ことぶきづる）",
+    category: "tomesode",
+    price: 22000,
+    rentalDays: 4,
+    sizes: ["M", "L"],
+    colors: ["黒", "金"],
+    material: "正絹",
+    description:
+      "松竹梅と鶴を金糸で描いた格調高い黒留袖。ご親族の結婚式に最適です。",
+    images: ["tomesode-kotobuki-1"],
+    inStock: true,
+  },
+  {
+    id: "tsukesage-asagiri",
+    name: "付け下げ 朝霧（あさぎり）",
+    category: "tsukesage",
+    price: 14000,
+    rentalDays: 4,
+    sizes: ["S", "M", "L"],
+    colors: ["水色"],
+    material: "正絹",
+    description:
+      "霞をイメージした控えめな柄付け。式典やちょっとしたお出かけに程よい華やぎ。",
+    images: ["tsukesage-asagiri-1"],
+    inStock: true,
+  },
+  {
+    id: "hakama-sotsugyo-ebicha",
+    name: "卒業袴 海老茶（えびちゃ）",
+    category: "hakama",
+    price: 19000,
+    rentalDays: 2,
+    sizes: ["S", "M", "L"],
+    colors: ["海老茶", "生成り"],
+    material: "ポリエステル",
+    description:
+      "定番の海老茶色の袴に、二尺袖を合わせた卒業式スタイル。凛とした佇まいに。",
+    images: ["hakama-sotsugyo-ebicha-1"],
+    inStock: true,
+    featured: true,
+  },
+  {
+    id: "hakama-sotsugyo-kon",
+    name: "卒業袴 紺無地（こんむじ）",
+    category: "hakama",
+    price: 17000,
+    rentalDays: 2,
+    sizes: ["M", "L"],
+    colors: ["紺"],
+    material: "ポリエステル",
+    description: "シンプルな紺無地の袴。どんな着物にも合わせやすい万能な一枚。",
+    images: ["hakama-sotsugyo-kon-1"],
+    inStock: true,
+  },
+  {
+    id: "yukata-hanabi",
+    name: "浴衣 花火（はなび）",
+    category: "yukata",
+    price: 6000,
+    rentalDays: 3,
+    sizes: ["フリー"],
+    colors: ["紺", "白"],
+    material: "綿",
+    description: "紺地に大輪の花火を描いた涼やかな浴衣。夏祭りや花火大会に。",
+    images: ["yukata-hanabi-1"],
+    inStock: true,
+    featured: true,
+  },
+  {
+    id: "yukata-kingyo",
+    name: "浴衣 金魚（きんぎょ）",
+    category: "yukata",
+    price: 5500,
+    rentalDays: 3,
+    sizes: ["フリー"],
+    colors: ["白", "赤"],
+    material: "綿",
+    description: "白地に金魚が泳ぐ愛らしい浴衣。帯とのコーディネートも楽しめます。",
+    images: ["yukata-kingyo-1"],
+    inStock: true,
+  },
+];
+
+/** 全商品を取得 */
+export function getAllKimonos(): Kimono[] {
+  return kimonos;
+}
+
+/** ID から1点を取得 */
+export function getKimonoById(id: string): Kimono | undefined {
+  return kimonos.find((k) => k.id === id);
+}
+
+/** 注目商品を取得 */
+export function getFeaturedKimonos(): Kimono[] {
+  return kimonos.filter((k) => k.featured);
+}
