@@ -57,6 +57,7 @@
   - [x] 予約一覧（/admin/reservations）＋管理レイアウト (loop 20)
   - [x] 予約詳細（/admin/reservations/[id]）＋ダッシュボード集計（/admin） (loop 21)
   - [x] 管理画面のアクセス保護（Basic認証 middleware） (loop 22)
+  - [x] 決済状況の可視化（一覧に入金列＋ダッシュボードに入金件数/入金額タイル） (loop 34)
 
 ## 品質・整備
 
