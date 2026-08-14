@@ -6,6 +6,7 @@ import { getReservedRanges } from "@/lib/availability";
 import { getCategoryLabel } from "@/lib/categories";
 import { KimonoImage } from "@/components/KimonoImage";
 import { AddToCartForm } from "@/components/AddToCartForm";
+import { FavoriteButton } from "@/components/FavoriteButton";
 
 // 在庫（貸出中期間）を常に最新反映するため動的レンダリング
 export const dynamic = "force-dynamic";
@@ -104,6 +105,10 @@ export default async function KimonoDetailPage({
 
           {/* サイズ・レンタル開始日を選んでカートへ */}
           <AddToCartForm kimono={kimono} reservedRanges={reservedRanges} />
+
+          <div className="mt-6">
+            <FavoriteButton kimonoId={kimono.id} variant="inline" />
+          </div>
 
           <div className="mt-8">
             <Link

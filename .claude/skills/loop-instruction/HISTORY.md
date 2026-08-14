@@ -5,6 +5,22 @@
 
 ---
 
+## loop 38 — お気に入り基盤＋カード/詳細のボタン（2026-08-14）
+
+### やったこと
+- `lib/favorites.tsx`: カートと同型の `FavoritesProvider`＋`useFavorites`（着物IDの配列を localStorage キー `miyabi-favorites` に永続化）。API: `ids/ready/has/toggle/remove/clear/count`。
+- ルートレイアウトを `CartProvider > FavoritesProvider` でラップ。
+- `components/FavoriteButton.tsx`: ハートのトグルボタン（overlay=カード上の丸ボタン / inline=詳細のラベル付き）。`<Link>` 内でも遷移しないよう `preventDefault`＋`stopPropagation`。
+- ProductCard（画像右下にオーバーレイ）と商品詳細（カートの下にinline）に設置。
+
+### 結果
+- ESLint 0・テスト 44 件パス・`next build` 成功。ブラウザ確認：カードのハートをトグル→localStorage に `["furisode-hanakanzashi","houmongi-shikisai"]` 保存→リロード後もアクティブ2件、かつクリックしても遷移しない。
+
+### 気づき・次への申し送り
+- お気に入りは着物IDのみ保持し、表示データはページ側でDBと突き合わせる方針。次ループでヘッダーのお気に入り導線（件数バッジ）と `/favorites` 一覧ページを追加する。
+
+---
+
 ## loop 37 — 商品一覧の検索・並び替え（2026-08-14）
 
 ### やったこと
