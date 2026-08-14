@@ -5,6 +5,23 @@
 
 ---
 
+## loop 37 — 商品一覧の検索・並び替え（2026-08-14）
+
+### やったこと
+- `lib/kimono-filter.ts`（純粋ロジック）: `filterKimonos`（名前・説明・素材・色をキーワード部分一致）、`sortKimonos`（おすすめ=取得順/料金安い順/高い順、元配列非破壊）、`applyKimonoQuery`、`isSortId`。件数が少ないため in-memory 処理で SQLite の照合差異を回避。
+- `components/KimonoFilters.tsx`（クライアント）: カテゴリchip・検索フォーム・並び替えselectを `useRouter` で searchParams に反映（SSR で再取得）。
+- 一覧ページ（サーバーコンポーネント）を `?category&q&sort` 対応に。件数表示に検索語を併記。
+- 単体テスト `tests/kimono-filter.test.ts` を10件追加。
+
+### 結果
+- ESLint 0・テスト **44 件パス**（+10）・`next build` 成功。ブラウザ確認（「正絹」検索で6件、料金安い順で ¥5,500→¥32,000 に整列）。
+
+### 気づき・次への申し送り
+- 状態は URL（searchParams）に集約したので共有・ブックマーク可。カテゴリ×検索×並び替えを併用できる。
+- 残りは実 Stripe 連携（要APIキー）と Capacitor アプリ化（要ネイティブSDK）。ユーザー方針待ち。
+
+---
+
 ## loop 36 — ユーザー自身による予約キャンセル導線（2026-08-14）
 
 ### やったこと
