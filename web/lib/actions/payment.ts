@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { processPayment } from "@/lib/payment";
+import { getCurrentUser } from "@/lib/auth";
 
 export interface PayResult {
   ok: boolean;
@@ -52,6 +53,51 @@ export async function payReservation(input: {
   });
 
   // 管理画面・予約照会の表示を更新
+  revalidatePath("/admin/reservations");
+  revalidatePath(`/admin/reservations/${r.id}`);
+  revalidatePath("/orders");
+
+  return { ok: true, paymentStatus: "paid" };
+}
+
+/**
+ * ログイン中のユーザーが、自分の予約を予約IDで直接決済する（マイページ用）。
+ * 受付番号+メールの代わりにセッションで本人確認する。他人の予約IDを渡しても
+ * userId が一致しなければ拒否する。冪等：すでに paid なら再課金しない。
+ */
+export async function payMyReservation(
+  reservationId: string,
+): Promise<PayResult> {
+  const user = await getCurrentUser();
+  if (!user) {
+    return { ok: false, error: "ログインが必要です。" };
+  }
+
+  const r = await prisma.reservation.findUnique({
+    where: { id: reservationId },
+  });
+  if (!r || r.userId !== user.id) {
+    return { ok: false, error: "該当する予約が見つかりませんでした。" };
+  }
+
+  if (r.paymentStatus === "paid") {
+    return { ok: true, alreadyPaid: true, paymentStatus: "paid" };
+  }
+  if (r.status === "cancelled") {
+    return { ok: false, error: "キャンセル済みの予約のため、お支払いできません。" };
+  }
+
+  const result = processPayment({ orderNumber: r.orderNumber, amount: r.total });
+  if (!result.ok) {
+    return { ok: false, error: result.error ?? "決済に失敗しました。" };
+  }
+
+  await prisma.reservation.update({
+    where: { id: r.id },
+    data: { paymentStatus: "paid" },
+  });
+
+  revalidatePath("/mypage");
   revalidatePath("/admin/reservations");
   revalidatePath(`/admin/reservations/${r.id}`);
   revalidatePath("/orders");
