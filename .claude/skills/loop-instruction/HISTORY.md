@@ -5,7 +5,20 @@
 
 ---
 
-## loop 35 — マイページに決済状況表示＋その場で決済（2026-08-14）
+## loop 36 — ユーザー自身による予約キャンセル導線（2026-08-14）
+
+### やったこと
+- `lib/reservation-status.ts` に `isCancellable(status)`（受付=reserved のみ可）を追加＋単体テスト3件。
+- `lib/actions/cancel.ts`: `cancelMyReservation(予約ID, セッション本人確認)` と `cancelReservationByLookup(受付番号+メール)`。どちらも受付状態のみキャンセル可。
+- `components/CancelButton.tsx`（マイページ用, `window.confirm` 確認＋`router.refresh()`）。
+- マイページに受付状態のときキャンセルボタンを表示（決済ボタンと操作エリアを統合）。予約照会（OrderLookup）にもキャンセルボタンを追加し、成功時はステータスをローカルで「キャンセル」に更新。
+
+### 結果
+- ESLint 0・テスト **34 件パス**（+3）・`next build` 成功。予約照会からのキャンセルをブラウザ確認（受付→確認ダイアログ→キャンセル済みバッジ・決済不可メッセージ・ボタン消滅）。
+
+### 気づき・次への申し送り
+- キャンセル可否は `isCancellable` に集約（受付のみ）。発送後の扱い（返送・返金）は運用要件次第。支払い済みのキャンセル時の返金処理は未実装（現状は paymentStatus をそのまま保持し、管理側で対応する想定）。
+- 次は商品一覧の検索・並び替え（UX向上）。 — マイページに決済状況表示＋その場で決済（2026-08-14）
 
 ### やったこと
 - `lib/actions/payment.ts` に `payMyReservation(reservationId)` を追加。受付番号+メールの代わりに**セッションで本人確認**（`getCurrentUser` の id と予約の userId 一致必須）。冪等・キャンセル済みは拒否。

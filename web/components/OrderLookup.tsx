@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { lookupReservation, type LookupResult } from "@/lib/actions/lookup";
 import { payReservation } from "@/lib/actions/payment";
+import { cancelReservationByLookup } from "@/lib/actions/cancel";
 import { formatJP, rentalEndDate, latestReturnDate } from "@/lib/date";
 import { formatDateTime } from "@/lib/datetime";
 import { StatusBadge } from "@/components/StatusBadge";
 import { PaymentBadge } from "@/components/PaymentBadge";
+import { isCancellable } from "@/lib/reservation-status";
 
 export function OrderLookup() {
   const [orderNumber, setOrderNumber] = useState("");
@@ -15,6 +17,8 @@ export function OrderLookup() {
   const [result, setResult] = useState<LookupResult | null>(null);
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -27,6 +31,32 @@ export function OrderLookup() {
       setResult({ ok: false, error: "通信エラーが発生しました。" });
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleCancel() {
+    if (!result?.ok || !result.reservation) return;
+    if (!window.confirm("この予約をキャンセルします。よろしいですか？")) return;
+    setCancelling(true);
+    setCancelError(null);
+    try {
+      const res = await cancelReservationByLookup({ orderNumber, email });
+      if (!res.ok) {
+        setCancelError(res.error ?? "キャンセルに失敗しました。");
+        return;
+      }
+      setResult((prev) =>
+        prev?.ok && prev.reservation
+          ? {
+              ...prev,
+              reservation: { ...prev.reservation, status: "cancelled" },
+            }
+          : prev,
+      );
+    } catch {
+      setCancelError("通信エラーが発生しました。時間をおいて再度お試しください。");
+    } finally {
+      setCancelling(false);
     }
   }
 
@@ -214,6 +244,29 @@ export function OrderLookup() {
                 </>
               )}
             </div>
+
+            {/* 予約キャンセル（受付状態のみ） */}
+            {isCancellable(r.status) && (
+              <div className="mt-4 border-t border-kin/20 pt-5">
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  disabled={cancelling}
+                  className={
+                    cancelling
+                      ? "w-full cursor-wait rounded-full border border-enji/30 px-6 py-3 text-sm font-medium text-enji/50"
+                      : "w-full rounded-full border border-enji/40 px-6 py-3 text-sm font-medium text-enji transition hover:bg-enji/5"
+                  }
+                >
+                  {cancelling ? "処理中..." : "予約をキャンセルする"}
+                </button>
+                {cancelError && (
+                  <p className="mt-3 rounded-md bg-enji/10 px-4 py-3 text-sm text-enji">
+                    {cancelError}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-kin/30 px-6 py-16 text-center text-sm text-sumi/50">

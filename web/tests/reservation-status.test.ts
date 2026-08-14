@@ -3,6 +3,7 @@ import {
   statusLabel,
   isReservationStatus,
   statusLabels,
+  isCancellable,
 } from "@/lib/reservation-status";
 
 describe("isReservationStatus", () => {
@@ -30,5 +31,20 @@ describe("statusLabel", () => {
     for (const key of Object.keys(statusLabels)) {
       expect(statusLabels[key as keyof typeof statusLabels]).toBeTruthy();
     }
+  });
+});
+
+describe("isCancellable", () => {
+  it("受付(reserved)のみキャンセル可", () => {
+    expect(isCancellable("reserved")).toBe(true);
+  });
+  it("発送済み・返却済み・キャンセル済みは不可", () => {
+    expect(isCancellable("shipped")).toBe(false);
+    expect(isCancellable("returned")).toBe(false);
+    expect(isCancellable("cancelled")).toBe(false);
+  });
+  it("未知の値は不可", () => {
+    expect(isCancellable("")).toBe(false);
+    expect(isCancellable("foo")).toBe(false);
   });
 });
