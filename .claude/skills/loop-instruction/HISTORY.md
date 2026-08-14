@@ -5,7 +5,19 @@
 
 ---
 
-## loop 38 — お気に入り基盤＋カード/詳細のボタン（2026-08-14）
+## loop 39 — ヘッダーのお気に入り導線＋一覧ページ（2026-08-14）
+
+### やったこと
+- `components/FavoritesButton.tsx`: ヘッダーのお気に入りボタン（ハート＋件数バッジ、`/favorites` へ）。Header に設置（カートの左）。
+- `components/FavoritesView.tsx`（クライアント）: お気に入りID×サーバー取得の全商品を突き合わせて登録順に表示。空状態の案内も用意。
+- `app/(site)/favorites/page.tsx`（サーバー）: `getAllKimonos()` を渡すだけの薄いページ。
+
+### 結果
+- ESLint 0・テスト 44 件パス・`next build` 成功（/favorites ルート追加）。ブラウザ確認：カードで2件登録→ヘッダーバッジ「2」→`/favorites` に該当2件が表示。
+
+### 気づき・次への申し送り
+- お気に入りはこれで一通り完成（登録・永続化・件数バッジ・一覧）。将来ログイン連携でサーバー保存にする場合も Provider 内部だけ差し替えれば UI は不変。
+- 外部依存の残タスク（実 Stripe / Capacitor）は方針待ち。 — お気に入り基盤＋カード/詳細のボタン（2026-08-14）
 
 ### やったこと
 - `lib/favorites.tsx`: カートと同型の `FavoritesProvider`＋`useFavorites`（着物IDの配列を localStorage キー `miyabi-favorites` に永続化）。API: `ids/ready/has/toggle/remove/clear/count`。
