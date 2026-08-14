@@ -5,7 +5,21 @@
 
 ---
 
-## loop 39 — ヘッダーのお気に入り導線＋一覧ページ（2026-08-14）
+## loop 40 — 予約確認メールのダミー送信（2026-08-14）
+
+### やったこと
+- スキーマ: `EmailLog`（to/subject/body/kind/reservationId/createdAt）＋マイグレーション。
+- `lib/mail-templates.ts`（純粋）: `reservationConfirmationEmail`（件名・本文を組み立て）＋単体テスト4件。
+- `lib/mail.ts`（server-only）: `sendMail` はモック＝実送信せず EmailLog に記録＋ログ出力。実運用は SendGrid/SES 等にこの関数だけ差し替える継ぎ目。
+- `createReservation` で予約保存後に確認メールを記録（try/catchで送信失敗は予約を失敗させない）。
+- 管理の予約詳細に「送信メール」セクション（件名・宛先・日時・本文全文）を追加。`getEmailsByReservation` をリポジトリに追加。
+
+### 結果
+- ESLint 0・テスト **48 件パス**（+4）・`next build` 成功。ブラウザで実チェックアウト→予約作成→EmailLog に1件記録→管理詳細に確認メール全文表示を確認。
+
+### 気づき・次への申し送り
+- メールIDのみの疎結合（reservationId で紐付け）。将来、決済完了・キャンセルの通知メールも同じ `sendMail` で追加可能。
+- 次は商品レビュー機能、その後トップページの充実。 — ヘッダーのお気に入り導線＋一覧ページ（2026-08-14）
 
 ### やったこと
 - `components/FavoritesButton.tsx`: ヘッダーのお気に入りボタン（ハート＋件数バッジ、`/favorites` へ）。Header に設置（カートの左）。

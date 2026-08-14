@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getReservationById } from "@/lib/reservation-repository";
+import {
+  getReservationById,
+  getEmailsByReservation,
+} from "@/lib/reservation-repository";
 import { formatDateTime } from "@/lib/datetime";
 import { formatJP, rentalEndDate, latestReturnDate } from "@/lib/date";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -20,6 +23,7 @@ export default async function AdminReservationDetailPage({
   const r = await getReservationById(id);
   if (!r) notFound();
 
+  const emails = await getEmailsByReservation(r.id);
   const returnDue = latestReturnDate(r.items);
 
   const info: { label: string; value: string }[] = [
@@ -97,6 +101,31 @@ export default async function AdminReservationDetailPage({
       <p className="mt-4 text-right font-semibold text-kon">
         合計 ¥{r.total.toLocaleString()}
       </p>
+
+      {/* 送信メール（モック） */}
+      <h2 className="mt-8 font-serif text-lg text-kon">送信メール</h2>
+      {emails.length === 0 ? (
+        <p className="mt-3 text-sm text-sumi/60">送信されたメールはありません。</p>
+      ) : (
+        <ul className="mt-3 space-y-3">
+          {emails.map((m) => (
+            <li
+              key={m.id}
+              className="rounded-lg border border-kin/20 bg-white/60 p-4"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                <span className="font-medium text-sumi/90">{m.subject}</span>
+                <span className="text-xs text-sumi/60">
+                  {m.to} ／ {formatDateTime(m.createdAt)}
+                </span>
+              </div>
+              <pre className="mt-3 max-h-64 overflow-auto whitespace-pre-wrap rounded-md bg-washi-dark px-3 py-2 font-sans text-xs leading-relaxed text-sumi/80">
+                {m.body}
+              </pre>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

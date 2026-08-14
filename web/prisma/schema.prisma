@@ -83,3 +83,16 @@ model ReservationItem {
   rentalDays    Int
   price         Int
 }
+
+/// 送信メールの記録（サンプルのため実送信はせず DB に保存する）
+model EmailLog {
+  id            String   @id @default(cuid())
+  to            String
+  subject       String
+  body          String
+  /// メール種別: "reservation_confirmation" など
+  kind          String
+  /// 関連する予約（あれば）
+  reservationId String?
+  createdAt     DateTime @default(now())
+}

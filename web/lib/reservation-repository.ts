@@ -17,6 +17,14 @@ export async function getReservationById(id: string) {
   });
 }
 
+/** 指定予約に紐づく送信メール（新しい順） */
+export async function getEmailsByReservation(reservationId: string) {
+  return prisma.emailLog.findMany({
+    where: { reservationId },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 /** 指定ユーザーの予約履歴（新しい順、明細付き） */
 export async function getReservationsByUser(userId: string) {
   return prisma.reservation.findMany({
