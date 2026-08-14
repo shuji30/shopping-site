@@ -2,19 +2,24 @@
 
 import { useState } from "react";
 import { lookupReservation, type LookupResult } from "@/lib/actions/lookup";
+import { payReservation } from "@/lib/actions/payment";
 import { formatJP, rentalEndDate, latestReturnDate } from "@/lib/date";
 import { formatDateTime } from "@/lib/datetime";
 import { StatusBadge } from "@/components/StatusBadge";
+import { PaymentBadge } from "@/components/PaymentBadge";
 
 export function OrderLookup() {
   const [orderNumber, setOrderNumber] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<LookupResult | null>(null);
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+    setPayError(null);
     try {
       const res = await lookupReservation({ orderNumber, email });
       setResult(res);
@@ -22,6 +27,32 @@ export function OrderLookup() {
       setResult({ ok: false, error: "通信エラーが発生しました。" });
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handlePay() {
+    if (!result?.ok || !result.reservation) return;
+    setPaying(true);
+    setPayError(null);
+    try {
+      const res = await payReservation({ orderNumber, email });
+      if (!res.ok) {
+        setPayError(res.error ?? "決済に失敗しました。");
+        return;
+      }
+      // 成功時は結果の決済ステータスを支払い済みに更新
+      setResult((prev) =>
+        prev?.ok && prev.reservation
+          ? {
+              ...prev,
+              reservation: { ...prev.reservation, paymentStatus: "paid" },
+            }
+          : prev,
+      );
+    } catch {
+      setPayError("通信エラーが発生しました。時間をおいて再度お試しください。");
+    } finally {
+      setPaying(false);
     }
   }
 
@@ -90,7 +121,10 @@ export function OrderLookup() {
           <div className="rounded-lg border border-kin/20 bg-white/60 p-6">
             <div className="flex items-center justify-between">
               <p className="font-serif text-lg text-kon">予約内容</p>
-              <StatusBadge status={r.status} />
+              <div className="flex items-center gap-2">
+                <PaymentBadge status={r.paymentStatus} />
+                <StatusBadge status={r.status} />
+              </div>
             </div>
             <dl className="mt-4 space-y-1 text-sm">
               <div className="flex">
@@ -142,6 +176,44 @@ export function OrderLookup() {
             <p className="mt-3 text-right font-semibold text-kon">
               合計 ¥{r.total.toLocaleString()}
             </p>
+
+            {/* オンライン決済（テストモード） */}
+            <div className="mt-6 border-t border-kin/20 pt-5">
+              {r.paymentStatus === "paid" ? (
+                <p className="rounded-md bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                  お支払いは完了しています。ありがとうございます。
+                </p>
+              ) : r.status === "cancelled" ? (
+                <p className="rounded-md bg-washi-dark px-4 py-3 text-sm text-sumi/60">
+                  キャンセル済みの予約のため、お支払いはできません。
+                </p>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={handlePay}
+                    disabled={paying}
+                    className={
+                      paying
+                        ? "w-full cursor-wait rounded-full bg-kon/50 px-6 py-3 text-sm font-medium text-washi/70"
+                        : "w-full rounded-full bg-kon px-6 py-3 text-sm font-medium text-washi transition hover:bg-kon-light"
+                    }
+                  >
+                    {paying
+                      ? "処理中..."
+                      : `オンライン決済でお支払い（¥${r.total.toLocaleString()}）`}
+                  </button>
+                  {payError && (
+                    <p className="mt-3 rounded-md bg-enji/10 px-4 py-3 text-sm text-enji">
+                      {payError}
+                    </p>
+                  )}
+                  <p className="mt-2 text-xs text-sumi/50">
+                    ※ テストモードの決済です。実際の課金は行われません。
+                  </p>
+                </>
+              )}
+            </div>
           </div>
         ) : (
           <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-kin/30 px-6 py-16 text-center text-sm text-sumi/50">

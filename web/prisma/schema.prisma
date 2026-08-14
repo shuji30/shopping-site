@@ -43,6 +43,8 @@ model Reservation {
   total       Int
   /// "reserved" | "shipped" | "returned" | "cancelled"
   status      String            @default("reserved")
+  /// オンライン決済の状態: "unpaid" | "paid"
+  paymentStatus String          @default("unpaid")
   createdAt   DateTime          @default(now())
   userId      String?
   user        User?             @relation(fields: [userId], references: [id], onDelete: SetNull)

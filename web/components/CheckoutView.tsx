@@ -146,11 +146,11 @@ export function CheckoutView() {
           >
             予約照会
           </Link>
-          からいつでも内容を確認できます。
+          からいつでも内容の確認とオンライン決済ができます。
         </p>
 
         <p className="mt-6 rounded-md bg-washi-dark px-4 py-3 text-xs text-sumi/60">
-          ※ これはサンプルサイトです。実際の予約確定・決済・確認メール送信は行われません。
+          ※ これはサンプルサイトです。オンライン決済はテストモードで、実際の課金・確認メール送信は行われません。
         </p>
         <Link
           href="/kimonos"

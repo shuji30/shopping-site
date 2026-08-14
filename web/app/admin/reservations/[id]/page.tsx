@@ -5,6 +5,7 @@ import { getReservationById } from "@/lib/reservation-repository";
 import { formatDateTime } from "@/lib/datetime";
 import { formatJP, rentalEndDate, latestReturnDate } from "@/lib/date";
 import { StatusBadge } from "@/components/StatusBadge";
+import { PaymentBadge } from "@/components/PaymentBadge";
 import { StatusControl } from "@/components/StatusControl";
 
 export const metadata: Metadata = { title: "予約詳細（管理）" };
@@ -47,6 +48,7 @@ export default async function AdminReservationDetailPage({
       <div className="mt-4 flex items-center gap-3">
         <h1 className="font-serif text-2xl text-kon">予約詳細</h1>
         <StatusBadge status={r.status} />
+        <PaymentBadge status={r.paymentStatus} />
       </div>
 
       {/* お客様情報 */}
