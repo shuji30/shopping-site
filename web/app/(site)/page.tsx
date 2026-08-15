@@ -84,6 +84,96 @@ export default async function Home() {
           ))}
         </div>
       </section>
+
+      {/* 選ばれる理由 */}
+      <section className="mx-auto max-w-6xl px-4 py-16">
+        <h2 className="text-center font-serif text-2xl text-kon">
+          雅が選ばれる理由
+        </h2>
+        <div className="mt-8 grid gap-6 sm:grid-cols-3">
+          {features.map((f) => (
+            <div
+              key={f.title}
+              className="rounded-lg border border-kin/20 bg-white/60 p-6 text-center"
+            >
+              <p className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-kon/10 text-2xl">
+                {f.icon}
+              </p>
+              <h3 className="mt-4 font-serif text-lg text-kon">{f.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-sumi/70">
+                {f.body}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ご利用の流れ */}
+      <section className="bg-washi-dark/50">
+        <div className="mx-auto max-w-6xl px-4 py-16">
+          <h2 className="text-center font-serif text-2xl text-kon">
+            ご利用の流れ
+          </h2>
+          <ol className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {steps.map((s, i) => (
+              <li
+                key={s.title}
+                className="relative rounded-lg border border-kin/20 bg-white/70 p-6"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-kon font-serif text-sm text-washi">
+                  {i + 1}
+                </span>
+                <h3 className="mt-4 font-serif text-lg text-kon">{s.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-sumi/70">
+                  {s.body}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="mx-auto max-w-6xl px-4 py-20 text-center">
+        <h2 className="font-serif text-3xl text-kon">
+          特別な一日に、特別な一枚を。
+        </h2>
+        <p className="mt-4 text-sm leading-relaxed text-sumi/70">
+          豊富な品揃えから、あなたにぴったりの着物を見つけてください。
+        </p>
+        <Link
+          href="/kimonos"
+          className="mt-8 inline-block rounded-full bg-kon px-8 py-3 text-sm font-medium text-washi transition hover:bg-kon-light"
+        >
+          着物を探す
+        </Link>
+      </section>
     </>
   );
 }
+
+// トップページの静的コンテンツ
+const features = [
+  {
+    icon: "🚚",
+    title: "全国どこでも配送",
+    body: "ご自宅までお届け。返却も同梱の伝票で送るだけ。店頭受取もお選びいただけます。",
+  },
+  {
+    icon: "👘",
+    title: "豊富なサイズ・柄",
+    body: "振袖から浴衣まで、S〜Lの幅広いサイズと季節の柄を取り揃えています。",
+  },
+  {
+    icon: "✨",
+    title: "安心のクリーニング",
+    body: "専門スタッフによる仕上げでいつも清潔。万一の汚れも安心保証つき（サンプル）。",
+  },
+];
+
+const steps = [
+  { title: "選ぶ", body: "お好みの着物・サイズ・レンタル開始日を選んでカートに入れます。" },
+  { title: "予約する", body: "お客様情報を入力してお申し込み。受付番号が発行されます。" },
+  { title: "受け取る", body: "開始日に合わせて配送、または店頭でお受け取りください。" },
+  { title: "返却する", body: "ご利用後は同梱の伝票で返送するだけ。面倒な手間はありません。" },
+];

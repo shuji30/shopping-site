@@ -35,3 +35,11 @@ export function isReservationStatus(v: string): v is ReservationStatus {
 export function statusLabel(v: string): string {
   return isReservationStatus(v) ? statusLabels[v] : v;
 }
+
+/**
+ * ユーザー自身がキャンセルできるか。
+ * 受付（reserved）のみ可。発送済み・返却済み・キャンセル済みは不可。
+ */
+export function isCancellable(status: string): boolean {
+  return status === "reserved";
+}

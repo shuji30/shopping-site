@@ -38,15 +38,20 @@
 - [x] 在庫カレンダー（貸出中期間の表示・重複予約の抑止 / サーバー側でも二重予約防止） (loop 23)
 - [x] ユーザー認証・マイページ ✅
   - [x] 予約照会（受付番号＋メールで自分の予約を確認 / 両一致必須） (loop 24)
+  - [x] ユーザー自身による予約キャンセル（受付状態のみ／マイページ＝セッション・予約照会＝受付番号+メール） (loop 36)
   - [x] アカウント制のログイン（loop 27〜29）✅
     - [x] 認証基盤（User/Session, scryptハッシュ, セッションCookie）＋会員登録 (loop 27)
     - [x] ログイン / ログアウト＋ヘッダーのログイン状態 (loop 28)
     - [x] マイページ（予約履歴）＋予約とユーザーの紐付け (loop 29)
-- [ ] オンライン決済（Stripe 等）
+    - [x] マイページに決済状況表示＋その場でオンライン決済（本人確認は予約ID×セッション） (loop 35)
+- [x] オンライン決済（テストモード/モックゲートウェイ。予約照会からお支払い、決済状態を管理・照会に表示。Stripe等の実APIは `lib/payment.ts` の `processPayment` を差し替え） (loop 33)
 - [x] 配送・返却フロー（loop 25〜26）✅
   - [x] 予約ステータス（受付/発送済み/返却済み/キャンセル）＋返却期限の表示（管理・照会） (loop 25)
   - [x] 管理画面でステータス更新（サーバーアクション） (loop 26)
-- [ ] Capacitor による iOS/Android アプリ化
+- [~] Capacitor による iOS/Android アプリ化
+  - [x] 導入の下準備：@capacitor/core・cli 導入、capacitor.config.ts（server.url方式）、native/www シェル、npm scripts、docs/CAPACITOR.md (loop 43)
+  - [x] 人間の作業手順書（docs/CAPACITOR-runbook.md）を追加 (loop 44)
+  - [ ] ios/android プロジェクト生成＋実機ビルド（要 macOS+Xcode / Android Studio。この環境では不可・runbook 参照）
 - [x] バックエンド化＋データ永続化（Prisma + SQLite）（loop 16〜18）✅
   - [x] DB基盤（Prisma7 + SQLite + libSQLアダプタ / Kimonoスキーマ / マイグレーション / シード / 商品リポジトリ） (loop 16)
   - [x] 商品ページ群（トップ/一覧/詳細/カテゴリ）をDB経由（async）へ切替 (loop 17)
@@ -57,6 +62,26 @@
   - [x] 予約一覧（/admin/reservations）＋管理レイアウト (loop 20)
   - [x] 予約詳細（/admin/reservations/[id]）＋ダッシュボード集計（/admin） (loop 21)
   - [x] 管理画面のアクセス保護（Basic認証 middleware） (loop 22)
+  - [x] 決済状況の可視化（一覧に入金列＋ダッシュボードに入金件数/入金額タイル） (loop 34)
+
+## デプロイ・インフラ
+
+- [x] 本番DB（Postgres）対応の下準備 — DATABASE_URL でアダプタ自動選択＋切替手順（loop 30 / docs/DEPLOYMENT.md）
+- [x] GCP(Cloud Run)公開の下準備 — Dockerfile（standalone）＋.dockerignore＋docs/DEPLOY-GCP.md（Cloud Run + Cloud SQL） (loop 45)
+- [ ] 実デプロイ（要 GCPプロジェクト/課金・Cloud SQL作成。この環境では不可・DEPLOY-GCP.md 参照）
+
+## 通知・その他機能
+
+- [x] 予約確認メールのダミー送信（実送信せず EmailLog に記録／管理の予約詳細で全文表示） (loop 40)
+- [x] 商品レビュー（星評価＋コメント投稿、平均評価サマリ、詳細ページで一覧表示） (loop 41)
+- [x] トップページの充実（選ばれる理由・ご利用の流れ・CTAセクションを追加） (loop 42)
+
+## UX 改善
+
+- [x] 商品一覧の検索（名前・色・素材のキーワード）＋並び替え（おすすめ/料金安い順/高い順）。カテゴリと併用可 (loop 37)
+- [x] お気に入り（ウィッシュリスト）✅
+  - [x] 基盤（Context + localStorage）＋カード/詳細のお気に入りボタン (loop 38)
+  - [x] ヘッダーのお気に入り導線（件数バッジ）＋お気に入り一覧ページ（/favorites） (loop 39)
 
 ## 品質・整備
 

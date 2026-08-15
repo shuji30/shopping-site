@@ -17,6 +17,14 @@ export async function getReservationById(id: string) {
   });
 }
 
+/** 指定予約に紐づく送信メール（新しい順） */
+export async function getEmailsByReservation(reservationId: string) {
+  return prisma.emailLog.findMany({
+    where: { reservationId },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 /** 指定ユーザーの予約履歴（新しい順、明細付き） */
 export async function getReservationsByUser(userId: string) {
   return prisma.reservation.findMany({
@@ -26,11 +34,21 @@ export async function getReservationsByUser(userId: string) {
   });
 }
 
-/** ダッシュボード用の集計（件数・売上合計） */
+/** ダッシュボード用の集計（件数・売上合計・入金状況） */
 export async function getReservationStats() {
-  const [count, sum] = await Promise.all([
+  const [count, sum, paidCount, paidSum] = await Promise.all([
     prisma.reservation.count(),
     prisma.reservation.aggregate({ _sum: { total: true } }),
+    prisma.reservation.count({ where: { paymentStatus: "paid" } }),
+    prisma.reservation.aggregate({
+      _sum: { total: true },
+      where: { paymentStatus: "paid" },
+    }),
   ]);
-  return { count, revenue: sum._sum.total ?? 0 };
+  return {
+    count,
+    revenue: sum._sum.total ?? 0,
+    paidCount,
+    paidRevenue: paidSum._sum.total ?? 0,
+  };
 }

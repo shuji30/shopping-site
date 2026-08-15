@@ -6,6 +6,10 @@ import { getReservationsByUser } from "@/lib/reservation-repository";
 import { formatDateTime } from "@/lib/datetime";
 import { formatJP, rentalEndDate, latestReturnDate } from "@/lib/date";
 import { StatusBadge } from "@/components/StatusBadge";
+import { PaymentBadge } from "@/components/PaymentBadge";
+import { PayNowButton } from "@/components/PayNowButton";
+import { CancelButton } from "@/components/CancelButton";
+import { isCancellable } from "@/lib/reservation-status";
 
 export const metadata: Metadata = { title: "マイページ" };
 export const dynamic = "force-dynamic";
@@ -50,6 +54,7 @@ export default async function MyPage() {
                       {r.orderNumber}
                     </span>
                     <StatusBadge status={r.status} />
+                    <PaymentBadge status={r.paymentStatus} />
                   </div>
                   <span className="text-xs text-sumi/60">
                     {formatDateTime(r.createdAt)}
@@ -82,6 +87,23 @@ export default async function MyPage() {
                     合計 ¥{r.total.toLocaleString()}
                   </span>
                 </div>
+
+                {(isCancellable(r.status) ||
+                  (r.paymentStatus !== "paid" && r.status !== "cancelled")) && (
+                  <div className="mt-4 flex flex-wrap items-start justify-end gap-3 border-t border-kin/15 pt-4">
+                    {isCancellable(r.status) && (
+                      <CancelButton reservationId={r.id} />
+                    )}
+                    {r.paymentStatus !== "paid" && r.status !== "cancelled" && (
+                      <div>
+                        <PayNowButton reservationId={r.id} amount={r.total} />
+                        <p className="mt-2 text-right text-xs text-sumi/50">
+                          ※ テストモードの決済です。実際の課金は行われません。
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </li>
             );
           })}

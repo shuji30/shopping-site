@@ -1,0 +1,30 @@
+# ビルドコンテキストから除外（イメージを小さく・秘密を持ち込まない）
+node_modules
+.next
+out
+build
+
+# 秘密・ローカル環境
+.env
+.env.*
+!.env.example
+
+# ローカルDB・生成物
+*.db
+*.db-journal
+lib/generated
+
+# VCS・エディタ・ドキュメント
+.git
+.gitignore
+.vscode
+.idea
+**/*.md
+docs
+
+# テスト・Capacitor（本番イメージには不要）
+tests
+native
+capacitor.config.ts
+ios
+android

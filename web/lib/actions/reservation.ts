@@ -3,6 +3,8 @@
 import { prisma } from "@/lib/db";
 import { isRangeAvailable } from "@/lib/availability";
 import { getCurrentUser } from "@/lib/auth";
+import { sendMail } from "@/lib/mail";
+import { reservationConfirmationEmail } from "@/lib/mail-templates";
 
 export interface ReservationItemInput {
   kimonoId: string;
@@ -100,7 +102,7 @@ export async function createReservation(
   // ログイン中なら予約をユーザーに紐付ける
   const user = await getCurrentUser();
 
-  await prisma.reservation.create({
+  const created = await prisma.reservation.create({
     data: {
       orderNumber,
       userId: user?.id ?? null,
@@ -124,6 +126,26 @@ export async function createReservation(
       },
     },
   });
+
+  // 予約確認メール（モック送信＝記録）。送信失敗で予約自体は失敗させない。
+  try {
+    const mail = reservationConfirmationEmail({
+      orderNumber,
+      name: input.name,
+      method: input.method,
+      total,
+      items: lines,
+    });
+    await sendMail({
+      to: input.email,
+      subject: mail.subject,
+      body: mail.body,
+      kind: "reservation_confirmation",
+      reservationId: created.id,
+    });
+  } catch (e) {
+    console.error("確認メールの記録に失敗しました", e);
+  }
 
   return {
     ok: true,

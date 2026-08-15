@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Kimono } from "@/lib/types";
 import { getCategoryLabel } from "@/lib/categories";
 import { KimonoImage } from "./KimonoImage";
+import { FavoriteButton } from "./FavoriteButton";
 
 /** 商品一覧・注目商品で使う商品カード */
 export function ProductCard({ kimono }: { kimono: Kimono }) {
@@ -24,6 +25,9 @@ export function ProductCard({ kimono }: { kimono: Kimono }) {
             貸出中
           </span>
         )}
+        <div className="absolute bottom-2 right-2">
+          <FavoriteButton kimonoId={kimono.id} />
+        </div>
       </div>
       <div className="p-4">
         <h3 className="font-serif text-base leading-snug text-sumi transition-colors group-hover:text-kon">

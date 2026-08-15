@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CartButton } from "./CartButton";
+import { FavoritesButton } from "./FavoritesButton";
 import { getCurrentUser } from "@/lib/auth";
 import { logout } from "@/lib/actions/auth";
 
@@ -50,6 +51,7 @@ export async function Header() {
               ログイン
             </Link>
           )}
+          <FavoritesButton />
           <CartButton />
         </nav>
       </div>

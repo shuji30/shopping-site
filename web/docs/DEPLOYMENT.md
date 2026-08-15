@@ -1,5 +1,8 @@
 # デプロイと本番DB（Postgres）移行
 
+> **GCP(Cloud Run) への具体的な公開手順は [DEPLOY-GCP.md](DEPLOY-GCP.md) を参照。**
+> 本ファイルは DB 移行（SQLite→Postgres）の一般手順をまとめたものです。
+
 開発では **SQLite**、本番では **PostgreSQL** を推奨します。アプリのコードは
 `lib/db.ts` が `DATABASE_URL` のスキームを見てドライバアダプタを自動選択するため、
 コードの分岐は不要です。

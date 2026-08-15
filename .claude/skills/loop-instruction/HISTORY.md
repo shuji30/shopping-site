@@ -5,6 +5,205 @@
 
 ---
 
+## loop 45 — GCP(Cloud Run) 公開の下準備（2026-08-15）
+
+### やったこと
+- 方針：サーバーレンダリングのため **Cloud Run（コンテナ）＋ Cloud SQL(PostgreSQL)** を採用。
+- `next.config.ts`：`output:"standalone"` を有効化＋`outputFileTracingIncludes` で Prisma 生成クライアント（wasm等）をトレースに含める。
+- `Dockerfile`（マルチステージ / node:22-slim）：builder で `npm ci`＋`next build`、runner は standalone＋static のみ・非rootユーザー・`$PORT`(8080)/`HOSTNAME=0.0.0.0` で `node server.js`。
+- `.dockerignore`（node_modules/.next/.env/DB/tests/native 等を除外）。
+- `docs/DEPLOY-GCP.md`：API有効化→Cloud SQL作成→provider=postgresql でマイグレーション→Cloud Build で push→`gcloud run deploy`（`--add-cloudsql-instances`＋Secret Manager）→更新運用。README/DEPLOYMENT から相互参照。
+
+### 結果
+- `next build` で `.next/standalone/server.js` 生成を確認。standalone サーバーを **Cloud Run と同じ起動方法**（`PORT`/`HOSTNAME` env, `node server.js`）でスモーク → `/`・`/kimonos` が 200（DB接続込み）。ESLint 0・テスト 53 件パス。
+
+### 気づき・次への申し送り
+- **本番 Postgres は provider を postgresql にして再ベースラインが必須**（DEPLOYMENT.md/DEPLOY-GCP.md に明記）。SQLite方言のマイグレーションはPostgresに流用不可。
+- `docker build` と実デプロイ（gcloud）はこの環境では不可＝要 GCPプロジェクト/課金。Capacitor の `server.url` に Cloud Run の URL を入れればアプリも本番を指す。
+- Cloud SQL 接続は Unix ソケット（`/cloudsql/PROJECT:REGION:INSTANCE`）方式で DATABASE_URL を構成。 — Capacitor 人間作業の手順書（2026-08-15）
+
+### やったこと
+- `docs/CAPACITOR-runbook.md` を追加。人間が自分の Mac/PC で行う作業を順序立てて記載：
+  準備するもの（共通/iOS/Android）→ A.事前準備（Web公開・appId/server.url確定）→
+  B.プロジェクト生成 → C.実機/エミュレータ確認（＋起動後チェックリスト）→
+  D.ストア申請（iOS: Archive→App Store Connect / Android: keystore→AAB→Play Console）→
+  E.公開後の更新運用（server.url方式＝Web再デプロイで反映、ストア再申請は基本不要）→ よくあるつまずき。
+- `docs/CAPACITOR.md`（技術リファレンス）と README から runbook を相互参照。
+- 併せて閲覧用に整形した HTML 手順書を Artifact として別途共有済み。
+
+### 結果
+- ドキュメント追加のみ（コード・テスト無影響）。既存のビルド/テスト状態は維持。
+
+### 気づき・次への申し送り
+- CAPACITOR.md=設定の技術リファレンス、runbook=作業の進め方、と役割を分離。
+- 正式な appId（配布用逆ドメイン）と公開URLが決まれば capacitor.config.ts に確定反映する。
+
+---
+
+## loop 43 — Capacitor 導入の下準備（2026-08-15）
+
+### やったこと
+- 方針決定：本アプリは Server Actions/Prisma/Cookie認証を使うため `output:'export'` 不可。よって **`server.url` 方式**（ネイティブシェルが公開URLのサーバー版を WebView で表示）を採用。
+- `@capacitor/core`・`@capacitor/cli`（v7.6.8）を導入。
+- `capacitor.config.ts`（appId=jp.miyabi.kimono / appName=きものレンタル 雅 / webDir=native/www / server.url は手順化しコメントで雛形／cleartext でローカルIP確認可）。
+- `native/www/index.html`：server.url 未設定時のオフライン用シェル（雅ブランドの接続中スプラッシュ）。
+- npm scripts（cap:sync / cap:add:ios / cap:add:android / cap:open:*）、`.gitignore` に生成物 `/ios` `/android`、`docs/CAPACITOR.md`（前提・セットアップ・動作イメージ）、README から参照。
+
+### 結果
+- `npx cap sync` 成功（設定と webDir/シェルを認識）。ESLint 0・テスト 53 件パス・`next build` 成功（Web側は無影響）。ネイティブシェルの表示をブラウザ（モバイル幅）で確認。
+
+### 気づき・次への申し送り
+- **この環境の限界**：`cap add ios/android` と実機ビルドは macOS+Xcode / Android Studio+SDK が必要で、コンテナ内では生成・ビルド不可。手順は docs/CAPACITOR.md に集約。ios/android は生成物のため未コミット（.gitignore済み）。
+- 実運用では `server.url` に本番URLを設定 → アプリはそのままサーバー版（カタログ〜決済〜マイページ）を表示。完全オフライン要件が出たら対象画面のみ静的化した別ビルドを webDir に置く設計を別途検討。
+- 決定が必要な点：正式な appId（配布に使う逆ドメイン）と公開URL。決まればこちらで確定反映できる。 — トップページの充実（2026-08-15）
+
+### やったこと
+- トップページに3つのセクションを追加：
+  - 「雅が選ばれる理由」（配送／サイズ・柄／クリーニングの3特長カード）
+  - 「ご利用の流れ」（選ぶ→予約→受取→返却の4ステップ・番号付き）
+  - 末尾のCTAバンド（「特別な一日に、特別な一枚を。」＋商品一覧への導線）
+- コンテンツは静的配列（features/steps）で保持。既存パレット（kon/kin/washi/sumi）で統一。
+
+### 結果
+- ESLint 0・テスト 53 件パス・`next build` 成功。ブラウザでトップ全体を確認（ヒーロー→カテゴリ→注目商品→選ばれる理由→ご利用の流れ→CTA→フッター）。
+
+### 気づき・次への申し送り
+- 静的セクションのみでロジック追加なし（テスト増分なし）。次点として「お客様の声（最新レビューの抜粋）」をトップに出すとレビュー機能と連動して訴求力が上がる（別ループ候補）。 — 商品レビュー機能（2026-08-15）
+
+### やったこと
+- スキーマ: `Review`（kimonoId/name/rating/comment/createdAt, kimonoId にindex）＋マイグレーション。
+- `lib/reviews.ts`（純粋）: `isValidRating`（1〜5整数）・`averageRating`（小数第1位丸め・無効値無視）＋単体テスト5件。
+- `lib/review-repository.ts`: `getReviewsByKimono` / `getReviewStats`（件数・平均）。
+- `lib/actions/review.ts`: `createReview`（評価・コメント検証、商品存在確認、ログイン中は表示名を会員名で補完、長さ制限）。
+- `components/StarRating.tsx`（表示・読み取り専用）、`components/ReviewForm.tsx`（星選択＋投稿、成功時 `router.refresh()`）。
+- 商品詳細に評価サマリ（価格下）＋レビュー一覧＋投稿フォームのセクション（`#reviews`）を追加。
+
+### 結果
+- ESLint 0・テスト **53 件パス**（+5）・`next build` 成功。ブラウザで4星/5星を投稿→平均4.5・2件が一覧とサマリに反映されることを確認。
+
+### 気づき・次への申し送り
+- レビューは投稿即時反映（revalidate）。将来スパム対策・購入者限定・管理からの非表示などを足す余地あり。カード一覧への平均表示は別ループで対応可能。
+- 次はトップページの充実。 — 予約確認メールのダミー送信（2026-08-14）
+
+### やったこと
+- スキーマ: `EmailLog`（to/subject/body/kind/reservationId/createdAt）＋マイグレーション。
+- `lib/mail-templates.ts`（純粋）: `reservationConfirmationEmail`（件名・本文を組み立て）＋単体テスト4件。
+- `lib/mail.ts`（server-only）: `sendMail` はモック＝実送信せず EmailLog に記録＋ログ出力。実運用は SendGrid/SES 等にこの関数だけ差し替える継ぎ目。
+- `createReservation` で予約保存後に確認メールを記録（try/catchで送信失敗は予約を失敗させない）。
+- 管理の予約詳細に「送信メール」セクション（件名・宛先・日時・本文全文）を追加。`getEmailsByReservation` をリポジトリに追加。
+
+### 結果
+- ESLint 0・テスト **48 件パス**（+4）・`next build` 成功。ブラウザで実チェックアウト→予約作成→EmailLog に1件記録→管理詳細に確認メール全文表示を確認。
+
+### 気づき・次への申し送り
+- メールIDのみの疎結合（reservationId で紐付け）。将来、決済完了・キャンセルの通知メールも同じ `sendMail` で追加可能。
+- 次は商品レビュー機能、その後トップページの充実。 — ヘッダーのお気に入り導線＋一覧ページ（2026-08-14）
+
+### やったこと
+- `components/FavoritesButton.tsx`: ヘッダーのお気に入りボタン（ハート＋件数バッジ、`/favorites` へ）。Header に設置（カートの左）。
+- `components/FavoritesView.tsx`（クライアント）: お気に入りID×サーバー取得の全商品を突き合わせて登録順に表示。空状態の案内も用意。
+- `app/(site)/favorites/page.tsx`（サーバー）: `getAllKimonos()` を渡すだけの薄いページ。
+
+### 結果
+- ESLint 0・テスト 44 件パス・`next build` 成功（/favorites ルート追加）。ブラウザ確認：カードで2件登録→ヘッダーバッジ「2」→`/favorites` に該当2件が表示。
+
+### 気づき・次への申し送り
+- お気に入りはこれで一通り完成（登録・永続化・件数バッジ・一覧）。将来ログイン連携でサーバー保存にする場合も Provider 内部だけ差し替えれば UI は不変。
+- 外部依存の残タスク（実 Stripe / Capacitor）は方針待ち。 — お気に入り基盤＋カード/詳細のボタン（2026-08-14）
+
+### やったこと
+- `lib/favorites.tsx`: カートと同型の `FavoritesProvider`＋`useFavorites`（着物IDの配列を localStorage キー `miyabi-favorites` に永続化）。API: `ids/ready/has/toggle/remove/clear/count`。
+- ルートレイアウトを `CartProvider > FavoritesProvider` でラップ。
+- `components/FavoriteButton.tsx`: ハートのトグルボタン（overlay=カード上の丸ボタン / inline=詳細のラベル付き）。`<Link>` 内でも遷移しないよう `preventDefault`＋`stopPropagation`。
+- ProductCard（画像右下にオーバーレイ）と商品詳細（カートの下にinline）に設置。
+
+### 結果
+- ESLint 0・テスト 44 件パス・`next build` 成功。ブラウザ確認：カードのハートをトグル→localStorage に `["furisode-hanakanzashi","houmongi-shikisai"]` 保存→リロード後もアクティブ2件、かつクリックしても遷移しない。
+
+### 気づき・次への申し送り
+- お気に入りは着物IDのみ保持し、表示データはページ側でDBと突き合わせる方針。次ループでヘッダーのお気に入り導線（件数バッジ）と `/favorites` 一覧ページを追加する。
+
+---
+
+## loop 37 — 商品一覧の検索・並び替え（2026-08-14）
+
+### やったこと
+- `lib/kimono-filter.ts`（純粋ロジック）: `filterKimonos`（名前・説明・素材・色をキーワード部分一致）、`sortKimonos`（おすすめ=取得順/料金安い順/高い順、元配列非破壊）、`applyKimonoQuery`、`isSortId`。件数が少ないため in-memory 処理で SQLite の照合差異を回避。
+- `components/KimonoFilters.tsx`（クライアント）: カテゴリchip・検索フォーム・並び替えselectを `useRouter` で searchParams に反映（SSR で再取得）。
+- 一覧ページ（サーバーコンポーネント）を `?category&q&sort` 対応に。件数表示に検索語を併記。
+- 単体テスト `tests/kimono-filter.test.ts` を10件追加。
+
+### 結果
+- ESLint 0・テスト **44 件パス**（+10）・`next build` 成功。ブラウザ確認（「正絹」検索で6件、料金安い順で ¥5,500→¥32,000 に整列）。
+
+### 気づき・次への申し送り
+- 状態は URL（searchParams）に集約したので共有・ブックマーク可。カテゴリ×検索×並び替えを併用できる。
+- 残りは実 Stripe 連携（要APIキー）と Capacitor アプリ化（要ネイティブSDK）。ユーザー方針待ち。
+
+---
+
+## loop 36 — ユーザー自身による予約キャンセル導線（2026-08-14）
+
+### やったこと
+- `lib/reservation-status.ts` に `isCancellable(status)`（受付=reserved のみ可）を追加＋単体テスト3件。
+- `lib/actions/cancel.ts`: `cancelMyReservation(予約ID, セッション本人確認)` と `cancelReservationByLookup(受付番号+メール)`。どちらも受付状態のみキャンセル可。
+- `components/CancelButton.tsx`（マイページ用, `window.confirm` 確認＋`router.refresh()`）。
+- マイページに受付状態のときキャンセルボタンを表示（決済ボタンと操作エリアを統合）。予約照会（OrderLookup）にもキャンセルボタンを追加し、成功時はステータスをローカルで「キャンセル」に更新。
+
+### 結果
+- ESLint 0・テスト **34 件パス**（+3）・`next build` 成功。予約照会からのキャンセルをブラウザ確認（受付→確認ダイアログ→キャンセル済みバッジ・決済不可メッセージ・ボタン消滅）。
+
+### 気づき・次への申し送り
+- キャンセル可否は `isCancellable` に集約（受付のみ）。発送後の扱い（返送・返金）は運用要件次第。支払い済みのキャンセル時の返金処理は未実装（現状は paymentStatus をそのまま保持し、管理側で対応する想定）。
+- 次は商品一覧の検索・並び替え（UX向上）。 — マイページに決済状況表示＋その場で決済（2026-08-14）
+
+### やったこと
+- `lib/actions/payment.ts` に `payMyReservation(reservationId)` を追加。受付番号+メールの代わりに**セッションで本人確認**（`getCurrentUser` の id と予約の userId 一致必須）。冪等・キャンセル済みは拒否。
+- `components/PayNowButton.tsx`（クライアント）: 決済後に `router.refresh()` でサーバーコンポーネントを再取得し最新の決済状況を反映。
+- マイページの各予約カードに PaymentBadge を表示し、未払い（かつ非キャンセル）なら「オンライン決済」ボタンを表示。
+
+### 結果
+- ESLint 0・テスト 31 件パス・`next build` 成功。ログイン済み会員でブラウザ確認（未払い→ボタン押下→支払い済みバッジに変化・ボタン消滅）。
+
+### 気づき・次への申し送り
+- ログイン導線では受付番号+メール入力が不要になり UX 改善。予約照会（未ログイン）用の `payReservation` と併存。
+- 次は予約照会/マイページからのユーザー自身によるキャンセル導線を検討。
+
+---
+
+## loop 34 — 管理画面に決済状況を反映（2026-08-14）
+
+### やったこと
+- loop 33 で決済状況が管理の「予約詳細」にしか出ていなかったギャップを解消。
+- `getReservationStats()` に入金集計（`paidCount` / `paidRevenue` = paymentStatus:"paid" の件数・合計）を追加。
+- 管理の予約一覧に「入金」列（PaymentBadge）を追加。
+- 管理ダッシュボードに「入金済み（n/N件）」「入金額（決済済み）」タイルを追加（4タイル構成、`lg:grid-cols-4`）。
+
+### 結果
+- ESLint 0・テスト 31 件パス・`next build` 成功。dev サーバー＋入金済み/未入金のデモ予約で表示を確認（一覧のバッジ、ダッシュボードの集計値が一致）。
+
+### 気づき・次への申し送り
+- 集計は `paymentStatus:"paid"` を基準に。キャンセル分の扱い（売上から除外するか）は運用要件次第で、必要ならさらにフィルタを足す。
+- 残タスクは実 Stripe 連携と Capacitor アプリ化（いずれも外部依存）。
+
+---
+
+## loop 33 — オンライン決済（テストモード/モックゲートウェイ）（2026-08-14）
+
+### やったこと
+- スキーマ: `Reservation.paymentStatus`（"unpaid" | "paid", 既定 unpaid）を追加＋マイグレーション（`payment_status`）。
+- `lib/payment.ts`: 決済ドメイン（ラベル/バッジ配色/型ガード）＋差し替え可能なモックゲートウェイ `processPayment`。取引IDは入力から決定的に生成（冪等・再現可能）。実運用は Stripe 等の API 呼び出しにこの関数だけ差し替える継ぎ目にした。
+- `lib/actions/payment.ts`: `payReservation(受付番号+メール)` サーバーアクション。予約照会と同じく両一致必須・金額はDBの total を使用・すでに paid なら再課金しない（冪等）。成功時に管理/照会を revalidate。
+- UI: 予約照会（OrderLookup）に決済バッジと「オンライン決済でお支払い」ボタンを追加（照会済みの受付番号+メールで決済）。キャンセル済みは決済不可。管理の予約詳細に決済バッジを表示。完了画面のコピーを更新。
+- テスト: `tests/payment.test.ts`（型ガード・ラベル・モック決済の成否/決定性）を追加。
+
+### 結果
+- **テスト 31 件パス**（+9件）、ESLint エラー 0、`next build` 成功。DB スモーク（未払い→決済→支払い済み）確認。
+
+### 気づき・次への申し送り
+- Prisma7 は `migrate dev` 後もこの環境ではクライアント再生成が別途必要な場合があり、`prisma generate` を明示実行した（型不整合の解消）。
+- 実 Stripe 連携（PaymentIntent、Webhook での確定、返金）と Capacitor アプリ化が残タスク。いずれも外部キー/ネイティブSDKが必要でこの環境だけでは完全検証不可のため、着手前にユーザー確認が要る。
+
 ## loop 32 — Lint 一掃（2026-08-11）
 
 ### やったこと

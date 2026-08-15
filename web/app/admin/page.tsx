@@ -21,7 +21,7 @@ export default async function AdminDashboardPage() {
       <h1 className="font-serif text-2xl text-kon">ダッシュボード</h1>
 
       {/* 集計タイル */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-lg border border-kin/20 bg-white/60 p-6">
           <p className="text-sm text-sumi/60">予約件数</p>
           <p className="mt-2 text-3xl font-semibold text-kon">
@@ -33,6 +33,21 @@ export default async function AdminDashboardPage() {
           <p className="text-sm text-sumi/60">売上合計（申込ベース）</p>
           <p className="mt-2 text-3xl font-semibold text-kon">
             ¥{stats.revenue.toLocaleString()}
+          </p>
+        </div>
+        <div className="rounded-lg border border-kin/20 bg-white/60 p-6">
+          <p className="text-sm text-sumi/60">入金済み</p>
+          <p className="mt-2 text-3xl font-semibold text-emerald-700">
+            {stats.paidCount}
+            <span className="ml-1 text-base font-normal text-sumi/60">
+              / {stats.count} 件
+            </span>
+          </p>
+        </div>
+        <div className="rounded-lg border border-kin/20 bg-white/60 p-6">
+          <p className="text-sm text-sumi/60">入金額（決済済み）</p>
+          <p className="mt-2 text-3xl font-semibold text-emerald-700">
+            ¥{stats.paidRevenue.toLocaleString()}
           </p>
         </div>
       </div>
