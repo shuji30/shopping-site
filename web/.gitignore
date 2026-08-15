@@ -53,3 +53,7 @@ next-env.d.ts
 /.agents
 /.windsurf
 /skills-lock.json
+
+# Capacitor が生成するネイティブプラットフォーム（各自の環境で cap add して生成）
+/ios
+/android

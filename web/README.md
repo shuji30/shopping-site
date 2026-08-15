@@ -13,7 +13,8 @@
 - **Prisma 7**（開発: SQLite / 本番: PostgreSQL）— `DATABASE_URL` のスキームでアダプタを自動選択
   （本番移行手順は [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)）
 - カートはクライアント側（React Context + localStorage）
-- 将来: **Capacitor**（Web コードをそのままアプリへ）
+- **Capacitor** で iOS/Android アプリ化（サーバー版を WebView で表示する方式）
+  — 手順は [docs/CAPACITOR.md](docs/CAPACITOR.md)
 
 ## セットアップと起動
 

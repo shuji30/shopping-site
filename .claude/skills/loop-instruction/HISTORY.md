@@ -5,7 +5,22 @@
 
 ---
 
-## loop 42 — トップページの充実（2026-08-15）
+## loop 43 — Capacitor 導入の下準備（2026-08-15）
+
+### やったこと
+- 方針決定：本アプリは Server Actions/Prisma/Cookie認証を使うため `output:'export'` 不可。よって **`server.url` 方式**（ネイティブシェルが公開URLのサーバー版を WebView で表示）を採用。
+- `@capacitor/core`・`@capacitor/cli`（v7.6.8）を導入。
+- `capacitor.config.ts`（appId=jp.miyabi.kimono / appName=きものレンタル 雅 / webDir=native/www / server.url は手順化しコメントで雛形／cleartext でローカルIP確認可）。
+- `native/www/index.html`：server.url 未設定時のオフライン用シェル（雅ブランドの接続中スプラッシュ）。
+- npm scripts（cap:sync / cap:add:ios / cap:add:android / cap:open:*）、`.gitignore` に生成物 `/ios` `/android`、`docs/CAPACITOR.md`（前提・セットアップ・動作イメージ）、README から参照。
+
+### 結果
+- `npx cap sync` 成功（設定と webDir/シェルを認識）。ESLint 0・テスト 53 件パス・`next build` 成功（Web側は無影響）。ネイティブシェルの表示をブラウザ（モバイル幅）で確認。
+
+### 気づき・次への申し送り
+- **この環境の限界**：`cap add ios/android` と実機ビルドは macOS+Xcode / Android Studio+SDK が必要で、コンテナ内では生成・ビルド不可。手順は docs/CAPACITOR.md に集約。ios/android は生成物のため未コミット（.gitignore済み）。
+- 実運用では `server.url` に本番URLを設定 → アプリはそのままサーバー版（カタログ〜決済〜マイページ）を表示。完全オフライン要件が出たら対象画面のみ静的化した別ビルドを webDir に置く設計を別途検討。
+- 決定が必要な点：正式な appId（配布に使う逆ドメイン）と公開URL。決まればこちらで確定反映できる。 — トップページの充実（2026-08-15）
 
 ### やったこと
 - トップページに3つのセクションを追加：
