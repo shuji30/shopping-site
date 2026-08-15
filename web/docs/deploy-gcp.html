@@ -1,0 +1,373 @@
+<title>雅 GCPデプロイ手順</title>
+<style>
+  :root {
+    --ground: #f5f1e8;
+    --surface: #fdfbf6;
+    --surface-2: #ede7d9;
+    --ink: #22262c;
+    --ink-soft: #565a62;
+    --ink-faint: #86867e;
+    --border: #e2dbca;
+    --border-strong: #d2c8b0;
+    --kon: #1f3a5f;
+    --kon-2: #2d5486;
+    --kin: #a5801a;
+    --kin-bright: #c9a227;
+    --good: #2f7d5b;
+    --warn: #9b2d30;
+    --warn-bg: #f6e7e5;
+    --code-bg: #1c2531;
+    --code-fg: #e7edf4;
+    --code-comment: #8aa0b8;
+    --code-accent: #e2c352;
+    --code-str: #9fd0a6;
+
+    --font-serif: "Hiragino Mincho ProN", "Yu Mincho", YuMincho, "Noto Serif JP", "Songti SC", Georgia, serif;
+    --font-sans: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", YuGothic, Meiryo, system-ui, sans-serif;
+    --font-mono: "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+
+    --maxw: 880px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #12161d; --surface: #1a212b; --surface-2: #222b37;
+      --ink: #e9e5da; --ink-soft: #a6aab2; --ink-faint: #767d88;
+      --border: #2b3542; --border-strong: #3a4655;
+      --kon: #82abda; --kon-2: #a3c5ea; --kin: #d6b23f; --kin-bright: #e6c657;
+      --good: #5cc094; --warn: #e68f91; --warn-bg: #2e1c1d;
+      --code-bg: #0e141c; --code-fg: #dbe3ec; --code-comment: #7690a8;
+      --code-accent: #e6c657; --code-str: #8fd39a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #12161d; --surface: #1a212b; --surface-2: #222b37;
+    --ink: #e9e5da; --ink-soft: #a6aab2; --ink-faint: #767d88;
+    --border: #2b3542; --border-strong: #3a4655;
+    --kon: #82abda; --kon-2: #a3c5ea; --kin: #d6b23f; --kin-bright: #e6c657;
+    --good: #5cc094; --warn: #e68f91; --warn-bg: #2e1c1d;
+    --code-bg: #0e141c; --code-fg: #dbe3ec; --code-comment: #7690a8;
+    --code-accent: #e6c657; --code-str: #8fd39a;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--font-sans); line-height: 1.75; font-size: 16px;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px 100px; }
+
+  header.masthead {
+    background: var(--kon); color: #f5f1e8; padding: 56px 24px 46px;
+    position: relative; overflow: hidden;
+  }
+  header.masthead .wave { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .14; pointer-events: none; }
+  header.masthead .inner { max-width: var(--maxw); margin: 0 auto; position: relative; }
+  .wordmark { font-family: var(--font-serif); font-size: 40px; font-weight: 700; line-height: 1; letter-spacing: .08em; color: #fff; }
+  .wordmark span { font-family: var(--font-serif); font-size: 12px; letter-spacing: .34em; font-weight: 400; color: var(--kin-bright); margin-left: 12px; vertical-align: middle; }
+  .eyebrow { font-family: var(--font-serif); font-size: 12.5px; letter-spacing: .32em; text-transform: uppercase; color: var(--kin-bright); margin: 28px 0 0; }
+  h1.title { font-family: var(--font-serif); font-size: clamp(30px, 6vw, 46px); line-height: 1.18; font-weight: 700; margin: 10px 0 0; text-wrap: balance; color: #fff; }
+  .lede { margin: 18px 0 0; max-width: 42em; color: rgba(245,241,232,.82); font-size: 16px; }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+  .meta { display: flex; flex-direction: column; gap: 2px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); border-radius: 10px; padding: 10px 16px; }
+  .meta .k { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--kin-bright); }
+  .meta .v { font-size: 14.5px; color: #f5f1e8; font-weight: 600; }
+
+  nav.phases { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--ground) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); }
+  nav.phases .inner { max-width: var(--maxw); margin: 0 auto; padding: 12px 24px; display: flex; flex-wrap: wrap; gap: 8px; }
+  nav.phases a { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-size: 13.5px; color: var(--ink-soft); border: 1px solid var(--border-strong); border-radius: 999px; padding: 5px 14px 5px 8px; transition: color .15s, border-color .15s; }
+  nav.phases a b { font-family: var(--font-serif); font-weight: 700; font-size: 12px; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: var(--kon); color: #fff; }
+  nav.phases a:hover { color: var(--kon); border-color: var(--kon); }
+  nav.phases a:focus-visible { outline: 2px solid var(--kin); outline-offset: 2px; }
+
+  section { margin-top: 50px; scroll-margin-top: 64px; }
+  .section-head { display: flex; align-items: center; gap: 14px; }
+  .badge { font-family: var(--font-serif); font-weight: 700; font-size: 20px; color: #fff; background: var(--kon); width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; flex: none; box-shadow: 0 2px 0 var(--border-strong); }
+  h2 { font-family: var(--font-serif); font-weight: 700; font-size: clamp(22px, 3.5vw, 27px); margin: 0; line-height: 1.3; text-wrap: balance; }
+  .section-sub { color: var(--ink-soft); margin: 8px 0 0; font-size: 15px; }
+  h3 { font-size: 15px; margin: 34px 0 0; color: var(--kon); font-weight: 700; }
+  p { margin: 14px 0 0; }
+  a.inline { color: var(--kon); text-decoration: underline; text-underline-offset: 3px; }
+
+  ol.steps { list-style: none; counter-reset: step; margin: 22px 0 0; padding: 0; }
+  ol.steps > li { position: relative; padding: 0 0 4px 50px; margin-top: 24px; }
+  ol.steps > li::before { counter-increment: step; content: counter(step); position: absolute; left: 0; top: -2px; font-family: var(--font-serif); font-weight: 700; font-size: 15px; color: var(--kin); background: var(--surface); width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--border-strong); display: grid; place-items: center; font-variant-numeric: tabular-nums; }
+  .step-t { font-weight: 700; font-size: 16px; color: var(--ink); }
+  .step-d { color: var(--ink-soft); margin-top: 4px; }
+  .step-d strong { color: var(--ink); font-weight: 700; }
+
+  pre { margin: 14px 0 0; background: var(--code-bg); color: var(--code-fg); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-family: var(--font-mono); font-size: 13px; line-height: 1.7; border: 1px solid rgba(255,255,255,.06); }
+  pre .c { color: var(--code-comment); }
+  pre .a { color: var(--code-accent); }
+  pre .s { color: var(--code-str); }
+  code.inl { font-family: var(--font-mono); font-size: .86em; background: var(--surface-2); color: var(--kon); padding: 1.5px 6px; border-radius: 5px; border: 1px solid var(--border); }
+
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 22px; }
+  @media (max-width: 720px) { .grid3 { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+  .card h4 { margin: 0 0 4px; font-size: 15px; font-weight: 700; color: var(--ink); }
+  ul.check { list-style: none; margin: 10px 0 0; padding: 0; }
+  ul.check li { position: relative; padding: 6px 0 6px 26px; font-size: 14px; color: var(--ink-soft); border-top: 1px solid var(--border); }
+  ul.check li:first-child { border-top: none; }
+  ul.check li::before { content: ""; position: absolute; left: 2px; top: 12px; width: 12px; height: 7px; border-left: 2px solid var(--kin); border-bottom: 2px solid var(--kin); transform: rotate(-45deg); }
+  ul.check li b { color: var(--ink); font-weight: 700; }
+
+  .note { margin-top: 18px; border-radius: 10px; padding: 14px 18px; border: 1px solid var(--border); background: var(--surface); border-left: 4px solid var(--kon-2); font-size: 14.5px; color: var(--ink-soft); }
+  .note.warn { border-left-color: var(--warn); background: var(--warn-bg); }
+  .note.tip { border-left-color: var(--kin); }
+  .note .lab { font-weight: 700; color: var(--ink); margin-right: 6px; font-size: 13px; }
+  .note.warn .lab { color: var(--warn); }
+
+  .highlight { margin-top: 22px; background: var(--surface-2); border: 1px solid var(--border-strong); border-radius: 14px; padding: 22px 24px; }
+  .highlight h3 { margin: 0; color: var(--kon); font-size: 16px; }
+  .highlight p { margin-top: 8px; color: var(--ink-soft); }
+  .highlight .big { display: block; font-family: var(--font-serif); font-weight: 700; color: var(--ink); font-size: 18px; margin-top: 6px; }
+
+  .arch { display: flex; align-items: stretch; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+  .arch .box { flex: 1 1 150px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .arch .box .t { font-weight: 700; color: var(--ink); font-size: 14.5px; }
+  .arch .box .d { color: var(--ink-soft); font-size: 12.5px; margin-top: 3px; }
+  .arch .arrow { align-self: center; color: var(--kin); font-weight: 700; font-size: 18px; }
+
+  dl.ts { margin: 22px 0 0; }
+  dl.ts div { padding: 14px 0; border-top: 1px solid var(--border); }
+  dl.ts dt { font-weight: 700; color: var(--ink); }
+  dl.ts dt::before { content: "▸ "; color: var(--kin); }
+  dl.ts dd { margin: 4px 0 0; color: var(--ink-soft); font-size: 14.5px; }
+
+  hr.rule { border: none; border-top: 1px solid var(--border); margin: 0; }
+  footer.foot { max-width: var(--maxw); margin: 56px auto 0; padding: 24px; color: var(--ink-faint); font-size: 13px; border-top: 1px solid var(--border); }
+  footer.foot code { font-family: var(--font-mono); color: var(--ink-soft); }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="masthead">
+  <svg class="wave" aria-hidden="true">
+    <defs><pattern id="w" width="64" height="32" patternUnits="userSpaceOnUse"><path d="M0 32 A32 32 0 0 1 64 32" fill="none" stroke="#fff" stroke-width="1.4"/></pattern></defs>
+    <rect width="100%" height="100%" fill="url(#w)"/>
+  </svg>
+  <div class="inner">
+    <div class="wordmark">雅<span>KIMONO RENTAL</span></div>
+    <p class="eyebrow">GCP Cloud Run &mdash; 公開手順</p>
+    <h1 class="title">雅を Google Cloud で公開する</h1>
+    <p class="lede">
+      雅はサーバーレンダリング（Server Actions・データベース・Cookie認証）で動くため、
+      GCP では <strong style="color:#fff">Cloud Run（コンテナ）＋ Cloud SQL for PostgreSQL</strong> で公開します。
+      静的ホスティングは使えません。これは <strong style="color:#fff">課金の有効な GCP プロジェクトが必要な、人間の作業</strong>で、
+      開発コンテナ内では実行できません。
+    </p>
+    <div class="meta-row">
+      <div class="meta"><span class="k">実行環境</span><span class="v">Cloud Run（$PORT で待受）</span></div>
+      <div class="meta"><span class="k">データベース</span><span class="v">Cloud SQL / PostgreSQL</span></div>
+      <div class="meta"><span class="k">コンテナ</span><span class="v">web/Dockerfile（standalone）</span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="phases" aria-label="ステップ">
+  <div class="inner">
+    <a href="#prep"><b>0</b>準備</a>
+    <a href="#s1"><b>1</b>API有効化</a>
+    <a href="#s2"><b>2</b>Cloud SQL</a>
+    <a href="#s3"><b>3</b>マイグレーション</a>
+    <a href="#s4"><b>4</b>ビルド&amp;push</a>
+    <a href="#s5"><b>5</b>デプロイ</a>
+    <a href="#s6"><b>6</b>更新</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <section id="arch">
+    <div class="note tip">
+      <span class="lab">構成</span>
+      ブラウザ / アプリ → <strong>Cloud Run</strong>（Next.js コンテナ）→ <strong>Cloud SQL</strong>（PostgreSQL）。
+      イメージは <strong>Artifact Registry</strong> に置き、<strong>Cloud Build</strong> でビルドします。
+      アプリのコードは <code class="inl">DATABASE_URL</code> のスキームで接続先を自動判定します（<code class="inl">lib/db.ts</code>）。
+    </div>
+    <div class="arch">
+      <div class="box"><div class="t">ブラウザ / アプリ</div><div class="d">Web・Capacitorアプリ</div></div>
+      <div class="arrow">→</div>
+      <div class="box"><div class="t">Cloud Run</div><div class="d">Next.js standalone コンテナ</div></div>
+      <div class="arrow">→</div>
+      <div class="box"><div class="t">Cloud SQL</div><div class="d">PostgreSQL 16</div></div>
+    </div>
+  </section>
+
+  <section id="prep">
+    <div class="section-head">
+      <span class="badge">0</span>
+      <div><h2>準備するもの</h2><p class="section-sub">着手前にそろえます。まず共通の変数を決めておくと楽です。</p></div>
+    </div>
+    <div class="grid3">
+      <div class="card"><h4>アカウント・権限</h4>
+        <ul class="check">
+          <li><b>課金が有効な GCP プロジェクト</b></li>
+          <li>Cloud Run 管理者 / Cloud SQL 管理者</li>
+          <li>Artifact Registry 管理者 / Cloud Build 編集者</li>
+        </ul>
+      </div>
+      <div class="card"><h4>ツール</h4>
+        <ul class="check">
+          <li><b>gcloud CLI</b>（認証済み）</li>
+          <li>（任意）<b>Cloud SQL Auth Proxy</b></li>
+          <li>Node.js（マイグレーション実行用）</li>
+        </ul>
+      </div>
+      <div class="card"><h4>コード側</h4>
+        <ul class="check">
+          <li><code class="inl">web/Dockerfile</code>（用意済み）</li>
+          <li><code class="inl">provider = "postgresql"</code> へ変更（手順3）</li>
+          <li>ADMIN パスワード等の秘密値</li>
+        </ul>
+      </div>
+    </div>
+    <pre><span class="c"># 自分の値に置き換える共通変数</span>
+export PROJECT=<span class="s">your-gcp-project</span>
+export REGION=<span class="s">asia-northeast1</span>          <span class="c"># 東京</span>
+export INSTANCE=<span class="s">miyabi-db</span>
+export DB=<span class="s">miyabi</span>
+export DBUSER=<span class="s">miyabi</span>
+export DBPASS=<span class="s">'＜安全なパスワード＞'</span>
+gcloud config set project <span class="s">"$PROJECT"</span></pre>
+  </section>
+
+  <section id="s1">
+    <div class="section-head">
+      <span class="badge">1</span>
+      <div><h2>API を有効化</h2><p class="section-sub">使用するサービスの API をまとめて有効化します。</p></div>
+    </div>
+    <pre>gcloud services enable \
+  run.googleapis.com \
+  sqladmin.googleapis.com \
+  artifactregistry.googleapis.com \
+  cloudbuild.googleapis.com \
+  secretmanager.googleapis.com</pre>
+  </section>
+
+  <section id="s2">
+    <div class="section-head">
+      <span class="badge">2</span>
+      <div><h2>Cloud SQL（PostgreSQL）を作成</h2><p class="section-sub">インスタンス・データベース・ユーザーを作ります。</p></div>
+    </div>
+    <pre>gcloud sql instances create <span class="s">"$INSTANCE"</span> \
+  --database-version=<span class="a">POSTGRES_16</span> \
+  --tier=<span class="a">db-f1-micro</span> \
+  --region=<span class="s">"$REGION"</span>
+
+gcloud sql databases create <span class="s">"$DB"</span> --instance=<span class="s">"$INSTANCE"</span>
+gcloud sql users create <span class="s">"$DBUSER"</span> --instance=<span class="s">"$INSTANCE"</span> --password=<span class="s">"$DBPASS"</span>
+
+<span class="c"># 接続名（PROJECT:REGION:INSTANCE）を控える</span>
+gcloud sql instances describe <span class="s">"$INSTANCE"</span> --format=<span class="s">'value(connectionName)'</span></pre>
+  </section>
+
+  <section id="s3">
+    <div class="section-head">
+      <span class="badge">3</span>
+      <div><h2>Postgres 用にマイグレーション</h2><p class="section-sub">既存の SQLite 用マイグレーションは作り直します。</p></div>
+    </div>
+    <div class="note warn"><span class="lab">重要</span>
+      <code class="inl">prisma/migrations</code> の既存 SQL は <strong>SQLite 方言</strong>のため Postgres には適用できません。
+      <code class="inl">provider</code> を切り替えてベースラインを作り直します。
+    </div>
+    <ol class="steps">
+      <li>
+        <div class="step-t"><code class="inl">prisma/schema.prisma</code> の provider を変更</div>
+        <pre>datasource db {
+  provider = <span class="a">"postgresql"</span>
+}</pre>
+      </li>
+      <li>
+        <div class="step-t">Cloud SQL Auth Proxy を起動（別ターミナル）</div>
+        <pre>cloud-sql-proxy <span class="s">"$PROJECT:$REGION:$INSTANCE"</span>   <span class="c"># 127.0.0.1:5432</span></pre>
+      </li>
+      <li>
+        <div class="step-t">ベースライン作成＋（任意）シード</div>
+        <pre>export DATABASE_URL=<span class="s">"postgresql://$DBUSER:$DBPASS@127.0.0.1:5432/$DB"</span>
+rm -rf prisma/migrations           <span class="c"># SQLite用履歴は退避 or 別管理</span>
+npx prisma migrate dev --name init <span class="c"># 初回のみ（以降は migrate deploy）</span>
+npm run db:seed                    <span class="c"># 任意：サンプル商品を投入</span></pre>
+      </li>
+    </ol>
+  </section>
+
+  <section id="s4">
+    <div class="section-head">
+      <span class="badge">4</span>
+      <div><h2>コンテナをビルドして push</h2><p class="section-sub">Cloud Build で Dockerfile をビルドし Artifact Registry へ。</p></div>
+    </div>
+    <pre><span class="c"># リポジトリ作成（初回のみ）</span>
+gcloud artifacts repositories create <span class="s">miyabi</span> \
+  --repository-format=docker --location=<span class="s">"$REGION"</span>
+
+<span class="c"># web/ ディレクトリで実行</span>
+cd web
+gcloud builds submit \
+  --tag <span class="s">"$REGION-docker.pkg.dev/$PROJECT/miyabi/web:latest"</span></pre>
+  </section>
+
+  <section id="s5">
+    <div class="section-head">
+      <span class="badge">5</span>
+      <div><h2>Cloud Run にデプロイ</h2><p class="section-sub">秘密値は Secret Manager 経由が安全です。</p></div>
+    </div>
+    <pre><span class="c"># シークレット登録（初回のみ）</span>
+printf '%s' <span class="s">"$DBPASS"</span> | gcloud secrets create <span class="s">miyabi-db-pass</span> --data-file=-
+printf '%s' <span class="s">'＜管理画面パスワード＞'</span> | gcloud secrets create <span class="s">miyabi-admin-pass</span> --data-file=-
+
+export CONN=<span class="s">"$PROJECT:$REGION:$INSTANCE"</span>
+
+gcloud run deploy <span class="s">miyabi</span> \
+  --image <span class="s">"$REGION-docker.pkg.dev/$PROJECT/miyabi/web:latest"</span> \
+  --region <span class="s">"$REGION"</span> \
+  --allow-unauthenticated \
+  --add-cloudsql-instances <span class="s">"$CONN"</span> \
+  --set-env-vars <span class="s">"NODE_ENV=production,ADMIN_USER=admin"</span> \
+  --set-env-vars <span class="s">"^@^DATABASE_URL=postgresql://$DBUSER@localhost/$DB?host=/cloudsql/$CONN"</span> \
+  --update-secrets <span class="s">"ADMIN_PASSWORD=miyabi-admin-pass:latest"</span></pre>
+    <div class="note"><span class="lab">Cloud SQL 接続</span>
+      <code class="inl">--add-cloudsql-instances</code> を付けると、コンテナ内の Unix ソケット
+      <code class="inl">/cloudsql/PROJECT:REGION:INSTANCE</code> 経由で接続できます。上の <code class="inl">DATABASE_URL</code> はその形式です。
+      <code class="inl">^@^</code> は <code class="inl">--set-env-vars</code> の区切りを <code class="inl">@</code> に変える指定（URL内カンマ対策）。
+    </div>
+    <p>デプロイ完了後、表示される <strong>Service URL</strong> をブラウザで開いて動作確認します。</p>
+  </section>
+
+  <section id="s6">
+    <div class="section-head">
+      <span class="badge">6</span>
+      <div><h2>継続的な更新</h2><p class="section-sub">以降の運用はシンプルです。</p></div>
+    </div>
+    <div class="highlight">
+      <h3>アプリの更新は「ビルド → デプロイ」を再実行するだけ</h3>
+      <span class="big">gcloud builds submit … → gcloud run deploy … でトラフィックが新リビジョンへ自動切替。</span>
+      <p>スキーマ変更時は、デプロイ前に <code class="inl">prisma migrate deploy</code>（Auth Proxy 経由 or Cloud Run ジョブ）を実行します。</p>
+    </div>
+    <div class="note tip"><span class="lab">Capacitor と連携</span>
+      <code class="inl">capacitor.config.ts</code> の <code class="inl">server.url</code> にこの Cloud Run の URL を設定すれば、
+      iOS/Android アプリもそのままこの本番環境を表示します。
+    </div>
+  </section>
+
+  <section id="tips">
+    <div class="section-head">
+      <span class="badge" style="background:var(--kin);color:#3a2c00">＋</span>
+      <div><h2>補足・チューニング</h2><p class="section-sub">必要に応じて。</p></div>
+    </div>
+    <dl class="ts">
+      <div><dt>スケール</dt><dd>Cloud Run は既定でゼロスケール（無アクセス時は課金されにくい）。コールドスタートが気になれば <code class="inl">--min-instances=1</code>。</dd></div>
+      <div><dt>接続数</dt><dd>同時実行が増えると Cloud SQL の接続が増加。<code class="inl">--max-instances</code> / <code class="inl">--concurrency</code> や接続プーラーで調整。</dd></div>
+      <div><dt>リージョン</dt><dd>Cloud Run と Cloud SQL は同一リージョンにするとレイテンシ・コストで有利。</dd></div>
+      <div><dt>独自ドメイン</dt><dd>Cloud Run の「ドメインのマッピング」またはロードバランサで割り当て。</dd></div>
+    </dl>
+  </section>
+
+  <hr class="rule" style="margin-top:54px">
+</div>
+
+<footer class="foot">
+  この手順書は <code>web/docs/DEPLOY-GCP.md</code> を閲覧用に整形したものです。
+  DB移行の一般手順は <code>web/docs/DEPLOYMENT.md</code>、コンテナ定義は <code>web/Dockerfile</code> を参照してください。
+</footer>

@@ -1,0 +1,639 @@
+<title>雅アプリ化 手順書</title>
+<style>
+  :root {
+    --ground: #f5f1e8;
+    --surface: #fdfbf6;
+    --surface-2: #ede7d9;
+    --ink: #22262c;
+    --ink-soft: #565a62;
+    --ink-faint: #86867e;
+    --border: #e2dbca;
+    --border-strong: #d2c8b0;
+    --kon: #1f3a5f;
+    --kon-2: #2d5486;
+    --kin: #a5801a;
+    --kin-bright: #c9a227;
+    --good: #2f7d5b;
+    --good-bg: #e7f1eb;
+    --warn: #9b2d30;
+    --warn-bg: #f6e7e5;
+    --code-bg: #1c2531;
+    --code-fg: #e7edf4;
+    --code-comment: #8aa0b8;
+    --code-accent: #e2c352;
+
+    --font-serif: "Hiragino Mincho ProN", "Yu Mincho", YuMincho, "Noto Serif JP", "Songti SC", Georgia, serif;
+    --font-sans: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", YuGothic, Meiryo, system-ui, sans-serif;
+    --font-mono: "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+
+    --maxw: 860px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #12161d;
+      --surface: #1a212b;
+      --surface-2: #222b37;
+      --ink: #e9e5da;
+      --ink-soft: #a6aab2;
+      --ink-faint: #767d88;
+      --border: #2b3542;
+      --border-strong: #3a4655;
+      --kon: #82abda;
+      --kon-2: #a3c5ea;
+      --kin: #d6b23f;
+      --kin-bright: #e6c657;
+      --good: #5cc094;
+      --good-bg: #172a22;
+      --warn: #e68f91;
+      --warn-bg: #2e1c1d;
+      --code-bg: #0e141c;
+      --code-fg: #dbe3ec;
+      --code-comment: #7690a8;
+      --code-accent: #e6c657;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #12161d;
+    --surface: #1a212b;
+    --surface-2: #222b37;
+    --ink: #e9e5da;
+    --ink-soft: #a6aab2;
+    --ink-faint: #767d88;
+    --border: #2b3542;
+    --border-strong: #3a4655;
+    --kon: #82abda;
+    --kon-2: #a3c5ea;
+    --kin: #d6b23f;
+    --kin-bright: #e6c657;
+    --good: #5cc094;
+    --good-bg: #172a22;
+    --warn: #e68f91;
+    --warn-bg: #2e1c1d;
+    --code-bg: #0e141c;
+    --code-fg: #dbe3ec;
+    --code-comment: #7690a8;
+    --code-accent: #e6c657;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    line-height: 1.75;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .wrap {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 0 24px 100px;
+  }
+
+  /* ---- Header ---- */
+  header.masthead {
+    background: var(--kon);
+    color: #f5f1e8;
+    padding: 56px 24px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  :root[data-theme="dark"] header.masthead,
+  header.masthead { color: #f5f1e8; }
+  header.masthead .wave {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    opacity: 0.14; pointer-events: none;
+  }
+  header.masthead .inner {
+    max-width: var(--maxw); margin: 0 auto; position: relative;
+  }
+  .wordmark {
+    font-family: var(--font-serif);
+    font-size: 40px; font-weight: 700; line-height: 1;
+    letter-spacing: 0.08em; color: #fff;
+  }
+  .wordmark span {
+    font-family: var(--font-serif);
+    font-size: 12px; letter-spacing: 0.34em; font-weight: 400;
+    color: var(--kin-bright); margin-left: 12px; vertical-align: middle;
+  }
+  .eyebrow {
+    font-family: var(--font-serif);
+    font-size: 12.5px; letter-spacing: 0.32em; text-transform: uppercase;
+    color: var(--kin-bright); margin: 28px 0 0;
+  }
+  h1.title {
+    font-family: var(--font-serif);
+    font-size: clamp(30px, 6vw, 46px);
+    line-height: 1.18; font-weight: 700; margin: 10px 0 0;
+    text-wrap: balance; color: #fff;
+  }
+  .lede {
+    margin: 18px 0 0; max-width: 40em;
+    color: rgba(245, 241, 232, 0.82); font-size: 16px;
+  }
+
+  .meta-row {
+    display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px;
+  }
+  .meta {
+    display: flex; flex-direction: column; gap: 2px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 10px; padding: 10px 16px;
+  }
+  .meta .k {
+    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--kin-bright);
+  }
+  .meta .v { font-size: 14.5px; color: #f5f1e8; font-weight: 600; }
+
+  /* ---- Phase nav ---- */
+  nav.phases {
+    position: sticky; top: 0; z-index: 5;
+    background: color-mix(in srgb, var(--ground) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  nav.phases .inner {
+    max-width: var(--maxw); margin: 0 auto; padding: 12px 24px;
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  nav.phases a {
+    display: inline-flex; align-items: center; gap: 8px;
+    text-decoration: none; font-size: 13.5px; color: var(--ink-soft);
+    border: 1px solid var(--border-strong); border-radius: 999px;
+    padding: 5px 14px 5px 8px; transition: color .15s, border-color .15s, background .15s;
+  }
+  nav.phases a b {
+    font-family: var(--font-serif); font-weight: 700; font-size: 12px;
+    width: 20px; height: 20px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--kon); color: #fff;
+  }
+  nav.phases a:hover { color: var(--kon); border-color: var(--kon); }
+  nav.phases a:focus-visible { outline: 2px solid var(--kin); outline-offset: 2px; }
+
+  /* ---- Sections ---- */
+  section { margin-top: 52px; scroll-margin-top: 64px; }
+
+  .section-head { display: flex; align-items: baseline; gap: 14px; }
+  .badge {
+    font-family: var(--font-serif); font-weight: 700;
+    font-size: 20px; color: #fff; background: var(--kon);
+    width: 40px; height: 40px; border-radius: 11px;
+    display: grid; place-items: center; flex: none;
+    align-self: center; box-shadow: 0 2px 0 var(--border-strong);
+  }
+  h2 {
+    font-family: var(--font-serif); font-weight: 700;
+    font-size: clamp(22px, 3.5vw, 28px); margin: 0; line-height: 1.3;
+    text-wrap: balance;
+  }
+  .section-sub { color: var(--ink-soft); margin: 8px 0 0; font-size: 15px; }
+
+  h3 {
+    font-size: 15px; margin: 40px 0 0; color: var(--kon);
+    font-weight: 700; letter-spacing: 0.02em;
+  }
+
+  p { margin: 14px 0 0; }
+  a.inline { color: var(--kon); text-decoration: underline; text-underline-offset: 3px; }
+
+  /* ---- Steps ---- */
+  ol.steps { list-style: none; counter-reset: step; margin: 22px 0 0; padding: 0; }
+  ol.steps > li {
+    position: relative; padding: 0 0 4px 52px; margin-top: 26px;
+  }
+  ol.steps > li::before {
+    counter-increment: step; content: counter(step);
+    position: absolute; left: 0; top: -2px;
+    font-family: var(--font-serif); font-weight: 700; font-size: 16px;
+    color: var(--kin); background: var(--surface);
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 1.5px solid var(--border-strong);
+    display: grid; place-items: center;
+    font-variant-numeric: tabular-nums;
+  }
+  ol.steps.lettered { counter-reset: none; }
+  .step-t { font-weight: 700; font-size: 16.5px; color: var(--ink); }
+  .step-d { color: var(--ink-soft); margin-top: 4px; }
+  .step-d strong { color: var(--ink); font-weight: 700; }
+
+  /* ---- Code ---- */
+  pre {
+    margin: 14px 0 0; background: var(--code-bg); color: var(--code-fg);
+    border-radius: 10px; padding: 14px 16px; overflow-x: auto;
+    font-family: var(--font-mono); font-size: 13.5px; line-height: 1.65;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  pre .c { color: var(--code-comment); }
+  pre .a { color: var(--code-accent); }
+  code.inl {
+    font-family: var(--font-mono); font-size: 0.88em;
+    background: var(--surface-2); color: var(--kon);
+    padding: 1.5px 6px; border-radius: 5px;
+    border: 1px solid var(--border);
+  }
+
+  /* ---- Cards / checklist ---- */
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 22px; }
+  @media (max-width: 720px) { .grid3 { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px;
+  }
+  .card h4 {
+    margin: 0 0 4px; font-size: 15px; display: flex; align-items: center; gap: 8px;
+    font-weight: 700; color: var(--ink);
+  }
+  .card h4 .tag {
+    font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .04em;
+    padding: 2px 7px; border-radius: 6px; font-weight: 600;
+    background: var(--kon); color: #fff;
+  }
+  .card h4 .tag.ios { background: var(--kon); }
+  .card h4 .tag.and { background: var(--good); }
+  ul.check { list-style: none; margin: 12px 0 0; padding: 0; }
+  ul.check li {
+    position: relative; padding: 6px 0 6px 26px; font-size: 14.5px;
+    color: var(--ink-soft); border-top: 1px solid var(--border);
+  }
+  ul.check li:first-child { border-top: none; }
+  ul.check li::before {
+    content: ""; position: absolute; left: 2px; top: 12px;
+    width: 12px; height: 7px; border-left: 2px solid var(--kin);
+    border-bottom: 2px solid var(--kin); transform: rotate(-45deg);
+  }
+  ul.check li b { color: var(--ink); font-weight: 700; }
+
+  /* ---- Callouts ---- */
+  .note {
+    margin-top: 18px; border-radius: 10px; padding: 14px 18px;
+    border: 1px solid var(--border); background: var(--surface);
+    border-left: 4px solid var(--kon-2); font-size: 14.5px; color: var(--ink-soft);
+  }
+  .note.warn { border-left-color: var(--warn); background: var(--warn-bg); }
+  .note.tip  { border-left-color: var(--kin); }
+  .note .lab {
+    font-weight: 700; color: var(--ink); margin-right: 6px;
+    font-size: 13px; letter-spacing: .04em;
+  }
+  .note.warn .lab { color: var(--warn); }
+
+  .highlight {
+    margin-top: 22px; background: var(--surface-2);
+    border: 1px solid var(--border-strong); border-radius: 14px; padding: 22px 24px;
+  }
+  .highlight h3 { margin: 0; color: var(--kon); font-size: 16px; }
+  .highlight p { margin-top: 8px; color: var(--ink-soft); }
+  .highlight .big {
+    display: block; font-family: var(--font-serif); font-weight: 700;
+    color: var(--ink); font-size: 18px; margin-top: 6px;
+  }
+
+  /* ---- Troubleshoot ---- */
+  dl.ts { margin: 22px 0 0; }
+  dl.ts div {
+    padding: 16px 0; border-top: 1px solid var(--border);
+    display: grid; grid-template-columns: 1fr; gap: 4px;
+  }
+  dl.ts dt { font-weight: 700; color: var(--ink); }
+  dl.ts dt::before { content: "▸ "; color: var(--warn); }
+  dl.ts dd { margin: 0; color: var(--ink-soft); font-size: 14.5px; }
+
+  hr.rule { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+  footer.foot {
+    max-width: var(--maxw); margin: 60px auto 0; padding: 24px;
+    color: var(--ink-faint); font-size: 13px; border-top: 1px solid var(--border);
+  }
+  footer.foot code { font-family: var(--font-mono); color: var(--ink-soft); }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="masthead">
+  <svg class="wave" aria-hidden="true">
+    <defs>
+      <pattern id="w" width="64" height="32" patternUnits="userSpaceOnUse">
+        <path d="M0 32 A32 32 0 0 1 64 32" fill="none" stroke="#fff" stroke-width="1.4"/>
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#w)"/>
+  </svg>
+  <div class="inner">
+    <div class="wordmark">雅<span>KIMONO RENTAL</span></div>
+    <p class="eyebrow">Capacitor アプリ化 &mdash; 人間の作業手順</p>
+    <h1 class="title">雅アプリを iOS / Android で配布する</h1>
+    <p class="lede">
+      Web版（Next.js）はコンテナ内で完成しています。ここから先の
+      <strong style="color:#fff">ネイティブアプリの生成・実機ビルド・ストア申請</strong>は、
+      macOS + Xcode / Android Studio が必要で、開発コンテナやクラウド環境では実行できません。
+      あなたが自分の Mac / PC で行う作業を、順番に並べた手順書です。
+    </p>
+    <div class="meta-row">
+      <div class="meta"><span class="k">方式</span><span class="v">server.url（WebViewで公開版を表示）</span></div>
+      <div class="meta"><span class="k">初回の目安</span><span class="v">半日〜1日＋審査</span></div>
+      <div class="meta"><span class="k">対象</span><span class="v">web/ ディレクトリ</span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="phases" aria-label="フェーズ">
+  <div class="inner">
+    <a href="#prep"><b>0</b>準備するもの</a>
+    <a href="#a"><b>A</b>事前準備</a>
+    <a href="#b"><b>B</b>プロジェクト生成</a>
+    <a href="#c"><b>C</b>実機で確認</a>
+    <a href="#d"><b>D</b>ストア申請・公開</a>
+    <a href="#ops"><b>E</b>公開後の更新</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- なぜ手作業か -->
+  <section id="why">
+    <div class="note tip">
+      <span class="lab">前提</span>
+      このアプリは Server Actions・データベース・Cookie認証を使うため、完全な静的化（<code class="inl">output: 'export'</code>）はできません。
+      そこで Capacitor は「公開URLのサーバー版を WebView で表示する（<code class="inl">server.url</code>）方式」で動かします。
+      つまり <strong>先に Web を本番公開して URL を用意すること</strong>が、すべての出発点です。
+      設定・シェル・npmスクリプトはリポジトリに用意済み（<code class="inl">web/capacitor.config.ts</code>, <code class="inl">web/docs/CAPACITOR.md</code>）。
+    </div>
+  </section>
+
+  <!-- 準備するもの -->
+  <section id="prep">
+    <div class="section-head">
+      <span class="badge">0</span>
+      <div>
+        <h2>準備するもの</h2>
+        <p class="section-sub">着手前にそろえておくと、途中で止まりません。</p>
+      </div>
+    </div>
+
+    <div class="grid3">
+      <div class="card">
+        <h4><span class="tag" style="background:var(--kin);color:#3a2c00">共通</span>どの環境でも</h4>
+        <ul class="check">
+          <li><b>Node.js</b>（リポジトリと同じ版）と <b>Git</b></li>
+          <li><b>公開URL</b>：Web を本番デプロイ（例：Vercel）</li>
+          <li>本番DB（<b>PostgreSQL</b>）と環境変数一式</li>
+          <li>アプリ<b>アイコン元画像</b>（1024×1024 PNG）</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4><span class="tag ios">iOS</span>Apple向け</h4>
+        <ul class="check">
+          <li><b>Mac</b>（必須）</li>
+          <li><b>Xcode</b>（Mac App Store）＋ <b>CocoaPods</b></li>
+          <li><b>Apple Developer Program</b>（年 $99）</li>
+          <li>App Store Connect のアカウント</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4><span class="tag and">Android</span>Google向け</h4>
+        <ul class="check">
+          <li><b>Android Studio</b>（＋ SDK・JDK）</li>
+          <li>Mac / Windows / Linux いずれも可</li>
+          <li><b>Google Play Developer</b>（初回 $25）</li>
+          <li>リリース署名鍵（keystore）を後で作成</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Phase A -->
+  <section id="a">
+    <div class="section-head">
+      <span class="badge">A</span>
+      <div>
+        <h2>事前準備</h2>
+        <p class="section-sub">Web を公開し、設定を自社の値に確定します。</p>
+      </div>
+    </div>
+
+    <ol class="steps">
+      <li>
+        <div class="step-t">Web アプリを本番公開して URL を得る</div>
+        <div class="step-d">Vercel などにデプロイし、本番DB（Postgres）と環境変数（<code class="inl">DATABASE_URL</code> / <code class="inl">ADMIN_USER</code> / <code class="inl">ADMIN_PASSWORD</code>）を設定。手順は <code class="inl">web/docs/DEPLOYMENT.md</code>。ブラウザで公開URLが開けることを確認します。</div>
+      </li>
+      <li>
+        <div class="step-t">リポジトリを手元に取得して依存をインストール</div>
+        <pre><span class="c"># リポジトリを clone 後</span>
+cd web
+npm install</pre>
+      </li>
+      <li>
+        <div class="step-t"><code class="inl">capacitor.config.ts</code> を自社の値に編集</div>
+        <div class="step-d"><strong>appId</strong> を自社の逆ドメインに、<strong>server.url</strong> を手順1の公開URL（https）に。本番では <code class="inl">cleartext</code> 行を削除します（httpsのみ許可）。</div>
+        <pre>const config: CapacitorConfig = {
+  appId: <span class="a">"jp.co.yourcompany.miyabi"</span>,  <span class="c">// ← 自社の逆ドメイン</span>
+  appName: "きものレンタル 雅",
+  webDir: "native/www",
+  server: {
+    url: <span class="a">"https://app.yourcompany.jp"</span>,   <span class="c">// ← 公開URL(https)</span>
+    androidScheme: "https",
+    <span class="c">// cleartext: true ← 本番では削除</span>
+  },
+};</pre>
+        <div class="note warn"><span class="lab">重要</span><code class="inl">appId</code> はストア登録と紐づき後から変更が困難です。配布に使う正式な逆ドメインを最初に確定してください。</div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- Phase B -->
+  <section id="b">
+    <div class="section-head">
+      <span class="badge">B</span>
+      <div>
+        <h2>ネイティブプロジェクトの生成</h2>
+        <p class="section-sub"><code class="inl">ios/</code>・<code class="inl">android/</code> はここで生成されます（gitignore済み）。</p>
+      </div>
+    </div>
+
+    <ol class="steps">
+      <li>
+        <div class="step-t">プラットフォームを追加する</div>
+        <div class="step-d">iOS の追加は <strong>Mac のみ</strong>。Android はどのOSでも可。</div>
+        <pre>npm run cap:add:ios       <span class="c"># macOS のみ</span>
+npm run cap:add:android</pre>
+      </li>
+      <li>
+        <div class="step-t">設定と Web アセットを同期する</div>
+        <pre>npm run cap:sync</pre>
+      </li>
+      <li>
+        <div class="step-t">アイコン・スプラッシュを生成する</div>
+        <div class="step-d">1024px の元画像から各サイズを自動生成します。</div>
+        <pre>npm i -D @capacitor/assets
+<span class="c"># assets/ に icon.png(1024px) と splash.png を置いてから</span>
+npx capacitor-assets generate</pre>
+      </li>
+    </ol>
+  </section>
+
+  <!-- Phase C -->
+  <section id="c">
+    <div class="section-head">
+      <span class="badge">C</span>
+      <div>
+        <h2>実機・エミュレータで確認</h2>
+        <p class="section-sub">起動して、WebView に公開版の雅が出れば成功です。</p>
+      </div>
+    </div>
+
+    <h3>iOS（Xcode）</h3>
+    <ol class="steps">
+      <li>
+        <div class="step-t">Xcode で開く</div>
+        <pre>npm run cap:open:ios</pre>
+      </li>
+      <li>
+        <div class="step-t">署名（Signing）を設定する</div>
+        <div class="step-d"><strong>Signing &amp; Capabilities</strong> タブで <strong>Team</strong> を自分の Apple ID / 組織に設定。Bundle Identifier が <code class="inl">appId</code> と一致していることを確認します。</div>
+      </li>
+      <li>
+        <div class="step-t">実機 / シミュレータで Run</div>
+        <div class="step-d">上部で端末を選び ▶ を押します。初回は実機側で「信頼」の許可が必要な場合があります。</div>
+      </li>
+    </ol>
+
+    <h3>Android（Android Studio）</h3>
+    <ol class="steps">
+      <li>
+        <div class="step-t">Android Studio で開く</div>
+        <pre>npm run cap:open:android</pre>
+      </li>
+      <li>
+        <div class="step-t">Gradle 同期後、エミュレータ / 実機で Run</div>
+        <div class="step-d">初回は Gradle の同期に数分かかります。完了後 ▶ で起動します。</div>
+      </li>
+    </ol>
+
+    <div class="highlight">
+      <h3>起動後の確認チェックリスト</h3>
+      <p>次が問題なく動けば、実運用に進めます。</p>
+      <ul class="check" style="margin-top:14px">
+        <li>商品一覧・<b>検索</b>・並び替え・カテゴリ絞り込み</li>
+        <li>商品詳細 → カート追加 → <b>予約申込</b>（受付番号が出る）</li>
+        <li>予約照会・<b>オンライン決済（テスト）</b>・キャンセル</li>
+        <li>会員登録 / ログイン / マイページ / <b>お気に入り</b></li>
+        <li>端末の「戻る」操作・画面回転・通信を切ったとき接続シェルが出る</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Phase D -->
+  <section id="d">
+    <div class="section-head">
+      <span class="badge">D</span>
+      <div>
+        <h2>ストア申請・公開</h2>
+        <p class="section-sub">審査を経て一般公開します。ここは各ストアの管理画面が主役です。</p>
+      </div>
+    </div>
+
+    <h3>iOS — App Store</h3>
+    <ol class="steps">
+      <li>
+        <div class="step-t">App Store Connect でアプリを登録</div>
+        <div class="step-d">Bundle ID に <code class="inl">appId</code> を指定してアプリレコードを作成します。</div>
+      </li>
+      <li>
+        <div class="step-t">Xcode でアーカイブ → アップロード</div>
+        <div class="step-d">端末を <strong>Any iOS Device</strong> に切替 → <strong>Product › Archive</strong> → <strong>Distribute App › App Store Connect</strong>。</div>
+      </li>
+      <li>
+        <div class="step-t">TestFlight で確認 → 審査提出 → 公開</div>
+        <div class="step-d">アプリ情報・スクリーンショット・プライバシー（データ利用）を入力し、審査に提出。承認後に公開します。</div>
+      </li>
+    </ol>
+
+    <h3>Android — Google Play</h3>
+    <ol class="steps">
+      <li>
+        <div class="step-t">リリース署名鍵（keystore）を作成</div>
+        <pre>keytool -genkey -v -keystore miyabi.keystore \
+  -alias miyabi -keyalg RSA -keysize 2048 -validity 10000</pre>
+        <div class="note warn"><span class="lab">重要</span>keystore とパスワードは<strong>紛失厳禁</strong>。失うと以後のアップデートを公開できません。安全に保管してください。</div>
+      </li>
+      <li>
+        <div class="step-t">署名付き AAB を生成</div>
+        <div class="step-d">Android Studio の <strong>Build › Generate Signed Bundle / APK › Android App Bundle</strong> で作成します。</div>
+      </li>
+      <li>
+        <div class="step-t">Play Console にアップロード → 審査 → 公開</div>
+        <div class="step-d">アプリを作成し AAB をアップロード。ストア掲載情報・コンテンツのレーティング・<strong>データセーフティ</strong>を入力し、内部テスト → 製品版へ段階公開します。</div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- Ops -->
+  <section id="ops">
+    <div class="section-head">
+      <span class="badge">E</span>
+      <div>
+        <h2>公開後の更新運用</h2>
+        <p class="section-sub">ここが server.url 方式のいちばんの利点です。</p>
+      </div>
+    </div>
+
+    <div class="highlight">
+      <h3>画面・機能の更新は「Web を再デプロイするだけ」</h3>
+      <span class="big">ストア再申請は不要 — アプリが表示しているのは公開URLのサーバー版だから。</span>
+      <p>商品追加、文言修正、価格改定、レビューや決済の改善などは、Web を本番デプロイした瞬間にアプリにも反映されます。</p>
+    </div>
+
+    <div class="note">
+      <span class="lab">再申請が要るのは「ガワ」を変えたときだけ</span>
+      アプリ名・アイコン・要求する権限・Capacitorプラグインの追加・対応OSバージョンの変更など、
+      ネイティブ側の設定を変えた場合のみ、再度アーカイブ／AAB生成して申請し直します。
+    </div>
+  </section>
+
+  <!-- Troubleshoot -->
+  <section id="trouble">
+    <div class="section-head">
+      <span class="badge" style="background:var(--warn)">!</span>
+      <div>
+        <h2>よくあるつまずき</h2>
+        <p class="section-sub">先に知っておくと回避できるもの。</p>
+      </div>
+    </div>
+
+    <dl class="ts">
+      <div>
+        <dt>iOS 審査で「4.2 最低限の機能」を指摘される</dt>
+        <dd>WebView 主体アプリは、単なるサイトのラッパーと見なされると却下されることがあります。プッシュ通知・カメラ等のネイティブ機能や、アプリならではの価値を持たせると通りやすくなります（対応プラグインを追加）。</dd>
+      </div>
+      <div>
+        <dt>白画面のまま何も表示されない</dt>
+        <dd><code class="inl">server.url</code> の到達性と https を確認。端末のネット接続、証明書エラーの有無もチェックします。</dd>
+      </div>
+      <div>
+        <dt>CocoaPods が無いと言われる（iOS）</dt>
+        <dd><code class="inl">sudo gem install cocoapods</code> を実行してから <code class="inl">cap sync</code> を再実行します。</dd>
+      </div>
+      <div>
+        <dt>Android で http のローカルIPに繋がらない</dt>
+        <dd>ローカル実機確認のときだけ <code class="inl">cleartext: true</code> を有効に。本番は https なので不要です。</dd>
+      </div>
+    </dl>
+  </section>
+
+  <hr class="rule" style="margin-top:56px">
+</div>
+
+<footer class="foot">
+  この手順書は <code>web/capacitor.config.ts</code> と <code>web/docs/CAPACITOR.md</code> を人間の作業目線でまとめたものです。
+  正式な <code>appId</code>（配布用の逆ドメイン）と公開URLが決まれば、設定への反映はこちらで行えます。
+</footer>
