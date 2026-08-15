@@ -5,7 +5,22 @@
 
 ---
 
-## loop 44 — Capacitor 人間作業の手順書（2026-08-15）
+## loop 45 — GCP(Cloud Run) 公開の下準備（2026-08-15）
+
+### やったこと
+- 方針：サーバーレンダリングのため **Cloud Run（コンテナ）＋ Cloud SQL(PostgreSQL)** を採用。
+- `next.config.ts`：`output:"standalone"` を有効化＋`outputFileTracingIncludes` で Prisma 生成クライアント（wasm等）をトレースに含める。
+- `Dockerfile`（マルチステージ / node:22-slim）：builder で `npm ci`＋`next build`、runner は standalone＋static のみ・非rootユーザー・`$PORT`(8080)/`HOSTNAME=0.0.0.0` で `node server.js`。
+- `.dockerignore`（node_modules/.next/.env/DB/tests/native 等を除外）。
+- `docs/DEPLOY-GCP.md`：API有効化→Cloud SQL作成→provider=postgresql でマイグレーション→Cloud Build で push→`gcloud run deploy`（`--add-cloudsql-instances`＋Secret Manager）→更新運用。README/DEPLOYMENT から相互参照。
+
+### 結果
+- `next build` で `.next/standalone/server.js` 生成を確認。standalone サーバーを **Cloud Run と同じ起動方法**（`PORT`/`HOSTNAME` env, `node server.js`）でスモーク → `/`・`/kimonos` が 200（DB接続込み）。ESLint 0・テスト 53 件パス。
+
+### 気づき・次への申し送り
+- **本番 Postgres は provider を postgresql にして再ベースラインが必須**（DEPLOYMENT.md/DEPLOY-GCP.md に明記）。SQLite方言のマイグレーションはPostgresに流用不可。
+- `docker build` と実デプロイ（gcloud）はこの環境では不可＝要 GCPプロジェクト/課金。Capacitor の `server.url` に Cloud Run の URL を入れればアプリも本番を指す。
+- Cloud SQL 接続は Unix ソケット（`/cloudsql/PROJECT:REGION:INSTANCE`）方式で DATABASE_URL を構成。 — Capacitor 人間作業の手順書（2026-08-15）
 
 ### やったこと
 - `docs/CAPACITOR-runbook.md` を追加。人間が自分の Mac/PC で行う作業を順序立てて記載：

@@ -11,7 +11,8 @@
 - **Tailwind CSS 4**（デザイントークンは `app/globals.css` の `@theme` に定義）
 - フォント: Noto Serif JP / Noto Sans JP（`next/font`）
 - **Prisma 7**（開発: SQLite / 本番: PostgreSQL）— `DATABASE_URL` のスキームでアダプタを自動選択
-  （本番移行手順は [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)）
+  （DB移行は [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)、
+  GCP(Cloud Run)公開は [docs/DEPLOY-GCP.md](docs/DEPLOY-GCP.md)）
 - カートはクライアント側（React Context + localStorage）
 - **Capacitor** で iOS/Android アプリ化（サーバー版を WebView で表示する方式）
   — 技術リファレンスは [docs/CAPACITOR.md](docs/CAPACITOR.md)、

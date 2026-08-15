@@ -64,6 +64,12 @@
   - [x] 管理画面のアクセス保護（Basic認証 middleware） (loop 22)
   - [x] 決済状況の可視化（一覧に入金列＋ダッシュボードに入金件数/入金額タイル） (loop 34)
 
+## デプロイ・インフラ
+
+- [x] 本番DB（Postgres）対応の下準備 — DATABASE_URL でアダプタ自動選択＋切替手順（loop 30 / docs/DEPLOYMENT.md）
+- [x] GCP(Cloud Run)公開の下準備 — Dockerfile（standalone）＋.dockerignore＋docs/DEPLOY-GCP.md（Cloud Run + Cloud SQL） (loop 45)
+- [ ] 実デプロイ（要 GCPプロジェクト/課金・Cloud SQL作成。この環境では不可・DEPLOY-GCP.md 参照）
+
 ## 通知・その他機能
 
 - [x] 予約確認メールのダミー送信（実送信せず EmailLog に記録／管理の予約詳細で全文表示） (loop 40)
