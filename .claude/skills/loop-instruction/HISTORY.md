@@ -5,7 +5,22 @@
 
 ---
 
-## loop 40 — 予約確認メールのダミー送信（2026-08-14）
+## loop 41 — 商品レビュー機能（2026-08-15）
+
+### やったこと
+- スキーマ: `Review`（kimonoId/name/rating/comment/createdAt, kimonoId にindex）＋マイグレーション。
+- `lib/reviews.ts`（純粋）: `isValidRating`（1〜5整数）・`averageRating`（小数第1位丸め・無効値無視）＋単体テスト5件。
+- `lib/review-repository.ts`: `getReviewsByKimono` / `getReviewStats`（件数・平均）。
+- `lib/actions/review.ts`: `createReview`（評価・コメント検証、商品存在確認、ログイン中は表示名を会員名で補完、長さ制限）。
+- `components/StarRating.tsx`（表示・読み取り専用）、`components/ReviewForm.tsx`（星選択＋投稿、成功時 `router.refresh()`）。
+- 商品詳細に評価サマリ（価格下）＋レビュー一覧＋投稿フォームのセクション（`#reviews`）を追加。
+
+### 結果
+- ESLint 0・テスト **53 件パス**（+5）・`next build` 成功。ブラウザで4星/5星を投稿→平均4.5・2件が一覧とサマリに反映されることを確認。
+
+### 気づき・次への申し送り
+- レビューは投稿即時反映（revalidate）。将来スパム対策・購入者限定・管理からの非表示などを足す余地あり。カード一覧への平均表示は別ループで対応可能。
+- 次はトップページの充実。 — 予約確認メールのダミー送信（2026-08-14）
 
 ### やったこと
 - スキーマ: `EmailLog`（to/subject/body/kind/reservationId/createdAt）＋マイグレーション。

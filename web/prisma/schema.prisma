@@ -84,6 +84,20 @@ model ReservationItem {
   price         Int
 }
 
+/// 商品レビュー（星評価＋コメント）
+model Review {
+  id        String   @id @default(cuid())
+  kimonoId  String
+  /// 投稿者の表示名
+  name      String
+  /// 5段階評価（1〜5）
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+
+  @@index([kimonoId])
+}
+
 /// 送信メールの記録（サンプルのため実送信はせず DB に保存する）
 model EmailLog {
   id            String   @id @default(cuid())
