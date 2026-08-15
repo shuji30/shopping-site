@@ -14,7 +14,8 @@
   （本番移行手順は [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)）
 - カートはクライアント側（React Context + localStorage）
 - **Capacitor** で iOS/Android アプリ化（サーバー版を WebView で表示する方式）
-  — 手順は [docs/CAPACITOR.md](docs/CAPACITOR.md)
+  — 技術リファレンスは [docs/CAPACITOR.md](docs/CAPACITOR.md)、
+  人間の作業手順は [docs/CAPACITOR-runbook.md](docs/CAPACITOR-runbook.md)
 
 ## セットアップと起動
 

@@ -12,6 +12,9 @@ middleware）を使うため、`output: 'export'` による完全な静的化は
 > `ios/` `android/` プロジェクトの生成と実機ビルドは、それぞれ **macOS + Xcode**、
 > **Android Studio + Android SDK** が必要で、この手順に従って各自の環境で行います。
 > （`ios/` `android/` は生成物のため `.gitignore` 済み）
+>
+> 👉 **人間の作業を順番にまとめた手順書は [CAPACITOR-runbook.md](CAPACITOR-runbook.md) を参照。**
+> （本ファイルは設定の技術リファレンス、runbook は作業の進め方）
 
 ## 構成
 

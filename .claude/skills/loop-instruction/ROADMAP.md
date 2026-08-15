@@ -50,7 +50,8 @@
   - [x] 管理画面でステータス更新（サーバーアクション） (loop 26)
 - [~] Capacitor による iOS/Android アプリ化
   - [x] 導入の下準備：@capacitor/core・cli 導入、capacitor.config.ts（server.url方式）、native/www シェル、npm scripts、docs/CAPACITOR.md (loop 43)
-  - [ ] ios/android プロジェクト生成＋実機ビルド（要 macOS+Xcode / Android Studio。この環境では不可）
+  - [x] 人間の作業手順書（docs/CAPACITOR-runbook.md）を追加 (loop 44)
+  - [ ] ios/android プロジェクト生成＋実機ビルド（要 macOS+Xcode / Android Studio。この環境では不可・runbook 参照）
 - [x] バックエンド化＋データ永続化（Prisma + SQLite）（loop 16〜18）✅
   - [x] DB基盤（Prisma7 + SQLite + libSQLアダプタ / Kimonoスキーマ / マイグレーション / シード / 商品リポジトリ） (loop 16)
   - [x] 商品ページ群（トップ/一覧/詳細/カテゴリ）をDB経由（async）へ切替 (loop 17)

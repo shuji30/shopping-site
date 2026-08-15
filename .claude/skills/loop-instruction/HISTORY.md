@@ -5,6 +5,26 @@
 
 ---
 
+## loop 44 — Capacitor 人間作業の手順書（2026-08-15）
+
+### やったこと
+- `docs/CAPACITOR-runbook.md` を追加。人間が自分の Mac/PC で行う作業を順序立てて記載：
+  準備するもの（共通/iOS/Android）→ A.事前準備（Web公開・appId/server.url確定）→
+  B.プロジェクト生成 → C.実機/エミュレータ確認（＋起動後チェックリスト）→
+  D.ストア申請（iOS: Archive→App Store Connect / Android: keystore→AAB→Play Console）→
+  E.公開後の更新運用（server.url方式＝Web再デプロイで反映、ストア再申請は基本不要）→ よくあるつまずき。
+- `docs/CAPACITOR.md`（技術リファレンス）と README から runbook を相互参照。
+- 併せて閲覧用に整形した HTML 手順書を Artifact として別途共有済み。
+
+### 結果
+- ドキュメント追加のみ（コード・テスト無影響）。既存のビルド/テスト状態は維持。
+
+### 気づき・次への申し送り
+- CAPACITOR.md=設定の技術リファレンス、runbook=作業の進め方、と役割を分離。
+- 正式な appId（配布用逆ドメイン）と公開URLが決まれば capacitor.config.ts に確定反映する。
+
+---
+
 ## loop 43 — Capacitor 導入の下準備（2026-08-15）
 
 ### やったこと
