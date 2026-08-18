@@ -2,9 +2,15 @@ import Link from "next/link";
 import { getFeaturedKimonos } from "@/lib/kimono-repository";
 import { categories } from "@/lib/categories";
 import { ProductCard } from "@/components/ProductCard";
+import { getLatestReviews } from "@/lib/review-repository";
+import { StarRating } from "@/components/StarRating";
+import { formatJP } from "@/lib/date";
 
 export default async function Home() {
-  const featured = await getFeaturedKimonos();
+  const [featured, latestReviews] = await Promise.all([
+    getFeaturedKimonos(),
+    getLatestReviews(3),
+  ]);
 
   return (
     <>
@@ -107,6 +113,37 @@ export default async function Home() {
           ))}
         </div>
       </section>
+
+      {/* お客様の声 */}
+      {latestReviews.length > 0 && (
+        <section className="mx-auto max-w-6xl px-4 py-16">
+          <h2 className="text-center font-serif text-2xl text-kon">
+            お客様の声
+          </h2>
+          <div className="mt-8 grid gap-6 sm:grid-cols-3">
+            {latestReviews.map((rv) => (
+              <Link
+                key={rv.id}
+                href={`/kimono/${rv.kimonoId}#reviews`}
+                className="rounded-lg border border-kin/20 bg-white/60 p-6 transition hover:border-kin hover:shadow-sm"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <StarRating value={rv.rating} />
+                  <span className="text-xs text-sumi/50">
+                    {formatJP(rv.createdAt.toISOString().slice(0, 10))}
+                  </span>
+                </div>
+                <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-sumi/90">
+                  {rv.comment}
+                </p>
+                <p className="mt-4 text-xs text-sumi/60">
+                  {rv.name} 様 ・ {rv.kimonoName}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ご利用の流れ */}
       <section className="bg-washi-dark/50">
