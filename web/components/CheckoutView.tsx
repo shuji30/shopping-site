@@ -61,6 +61,11 @@ export function CheckoutView({
     ...initialForm,
     ...initialValues,
   });
+  // 「前回のご注文内容から」の文言は、実際に予約履歴由来の値がある場合のみ出す
+  // （会員登録直後で予約履歴が無い場合に誤解を招かないため）。
+  const hasOrderHistory = Boolean(
+    initialValues?.tel || initialValues?.address || initialValues?.kana,
+  );
   const [errors, setErrors] = useState<Errors>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -201,7 +206,9 @@ export function CheckoutView({
       <form onSubmit={handleSubmit} className="space-y-5 lg:col-span-2" noValidate>
         {initialValues && (
           <p className="rounded-md bg-kon/5 px-4 py-3 text-xs text-sumi/70">
-            会員情報と前回のご注文内容から自動入力しています。内容は自由に変更できます。
+            {hasOrderHistory
+              ? "会員情報と前回のご注文内容から自動入力しています。内容は自由に変更できます。"
+              : "会員情報から自動入力しています。内容は自由に変更できます。"}
           </p>
         )}
         <div>

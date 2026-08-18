@@ -88,11 +88,65 @@ MVP のゴールにすべてチェックが付いたら、次フェーズへ進�
 2. **選択**: ROADMAP.md から次に着手するタスクを1つ選ぶ（原則、上から順／優先度順）。
 3. **実行**: そのタスクだけを実装・変更する。スコープ外に手を出さない。
 4. **検証**: ビルド・テスト・動作確認など、可能な範囲で「壊れていない」ことを確かめる。
+   - **UI／フロントエンドに関わる変更は、curl や型チェックだけで済ませず Playwright で実際に
+     ブラウザ操作して確認する**（詳細は下記「Playwrightでの動作確認」）。
+     クライアントコンポーネントの見た目・自動入力・フォーム操作など、静的なHTML取得では
+     検証できない箇所は必ずこちらを使う。
 5. **記録**:
    - HISTORY.md に「今回やったこと・結果・気づき」を1エントリ追記する。
    - ROADMAP.md のタスク状態を更新する（完了/進行中/新規発見タスクの追加）。
 6. **コミット**: 変更（コード + ROADMAP + HISTORY）をまとめて**1コミット**する。
 7. **判定**: 「終了条件」を満たしたか確認。満たさなければ次のループへ。
+
+---
+
+## Playwrightでの動作確認
+
+この環境には `chromium-cli` のようなブラウザREPLツールが無いため、UIの実地確認は
+`web/scripts/e2e/` 配下に置いた素朴な Playwright スクリプトを `npx tsx` で実行して行う
+（loop 48 でセットアップ。`@playwright/test` は導入済み、Chromiumバイナリもインストール済み）。
+
+### 基本の型
+
+1. 開発サーバーを起動し、ポートが応答するまで待つ（`sleep` ではなくポーリング）:
+   ```bash
+   cd web && npm run dev -- -p 3000 &
+   timeout 40 bash -c 'until curl -sf http://localhost:3000 >/dev/null; do sleep 1; done'
+   ```
+2. 検証したい操作を1本のスクリプトに書き、`npx tsx scripts/e2e/<name>.mjs` で実行する。
+   既存の `scripts/e2e/checkout-autofill.mjs`（ログイン→カート追加→チェックアウトの
+   自動入力確認）を雛形にする。`chromium.launch()` → `page.goto/fill/click` →
+   `page.inputValue`/`page.locator(...).count()` でアサート、というのが基本パターン。
+3. 見た目を目で確認したい場合は `page.screenshot({ path: "...png", fullPage: true })` を
+   使い、生成された画像を Read で確認する。
+4. スクリプトが作成したテストユーザー・予約・レビュー等は、**成功/失敗によらず
+   `finally` で必ず自己削除する**（本物の会員データと混ざらないようにする。
+   メールアドレスに `pw-verify-` 等の判別しやすいプレフィックスを付けておくと、
+   後から取りこぼしを一括掃除しやすい）。
+5. 検証が終わったら開発サーバーを止める（`next start`/`next build` は同じ `.next` を
+   使うため、動かしたまま並行すると衝突することがある）。
+
+### つまずきやすい点
+
+- **`lib/*.ts` の多くは `"server-only"` を import している**ため、`node`/`tsx` から直接
+  import すると `This module cannot be imported from a Client Component module.` で
+  落ちる。DBに触りたいだけなら、リポジトリ関数を経由せず
+  `new PrismaClient({ adapter: new PrismaLibSql({ url: "file:./dev.db" }) })` を
+  スクリプト側で自前に組み立てる（`checkout-autofill.mjs` のクリーンアップ部分を参照）。
+- **`.mjs` から `.ts` を import する**ため `node` ではなく `npx tsx` で実行すること
+  （`node` だと拡張子解決やトランスパイルで失敗する）。
+- **カレンダー系の操作は日付の衝突に注意**。既存の予約データと貸出期間が重なる
+  日付を選ぶと「カートに追加」ボタンが `disabled` のままクリックがタイムアウトする。
+  近い日付は既存データと被りやすいので、乱数で十分先の未来日を選ぶと安全
+  （`checkout-autofill.mjs` 参照）。
+- **`web/.env` と `web/dev.db` が無い/空の場合がある**（この作業ディレクトリは
+  `node_modules` 同様に揮発することがある）。動かない場合はまず
+  `npm ci` → `cp .env.example .env` → `npx prisma migrate deploy` →
+  `npm run db:seed` を確認する。
+- 管理画面（`/admin/**`）は Basic 認証（既定 `admin` / `.env` の `ADMIN_PASSWORD`）で
+  保護されている。Playwrightからは `page.goto` の前に
+  `context.setHTTPCredentials` 相当（`browser.newContext({ httpCredentials: {...} })`）
+  を使うか、`fetch`/`curl` で先に疎通確認する。
 
 ---
 

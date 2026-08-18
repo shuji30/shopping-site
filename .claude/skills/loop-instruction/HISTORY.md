@@ -5,6 +5,45 @@
 
 ---
 
+## loop 49 — Playwrightでの動作確認をスキルに組み込み（2026-08-18）
+
+### 経緯
+- 前ループ（loop 48）で「ブラウザ自動操作ツールが無く、実際に入力欄へ値が反映される
+  様子はcurlでは確認できない」と伝えたところ、ユーザーから「playwrightで確認するよう
+  スキルに追加して」と依頼。
+
+### やったこと
+- `@playwright/test` を devDependencies に追加。Chromiumバイナリはこの環境に既存
+  （`C:\Users\shuji\AppData\Local\ms-playwright`）だったため追加ダウンロード不要。
+- `web/scripts/e2e/checkout-autofill.mjs` を作成：loop 48 の自動入力を実地検証する
+  Playwrightスクリプト（会員登録→カート追加→チェックアウト1回目（会員情報のみ自動入力）
+  →予約確定→カート追加→チェックアウト2回目（電話番号・住所も自動入力）をアサート）。
+  作成したテストユーザー・予約は成功/失敗に関わらず `finally` で自己削除する。
+- 実行してみたところ、**実装済みの案内文に不整合を発見**：予約履歴が無い会員にも
+  「前回のご注文内容から自動入力しています」と表示されてしまっていた。
+  `CheckoutView.tsx` に `hasOrderHistory`（kana/tel/addressのいずれかが値を持つか）を
+  追加し、履歴の有無で文言を出し分けるよう修正（loop 48 の実装の続き）。
+- `.claude/skills/loop-instruction/SKILL.md` に「Playwrightでの動作確認」節を新設。
+  検証手順（開発サーバー起動→`npx tsx scripts/e2e/*.mjs`実行→自己クリーンアップ）と、
+  今回ハマった点（`"server-only"`ガード、`.ts`importにtsxが必要、日付衝突、
+  `.env`/`dev.db`が揮発する場合がある、管理画面のBasic認証）を明記。
+  「ループの実行手順」のステップ4（検証）から参照するようにし、UI変更は必ずここを
+  通るようにした。
+
+### 結果
+- ESLint 0・テスト 53 件パス・`next build` 成功。
+- `scripts/e2e/checkout-autofill.mjs` を実行し **PASS**（1回目=会員情報のみ自動入力・
+  案内文なし、2回目=電話番号/住所も自動入力・案内文あり、をどちらもアサート通り確認）。
+  実行後にテストユーザー・予約が自己削除されることも確認。
+
+### 気づき・次への申し送り
+- この環境には `chromium-cli` は無いが `@playwright/test` は使える。今後UIに関わる
+  ループは、curlだけで済ませず本節の手順で実地確認すること。
+- Playwrightスクリプトから`lib/*.ts`（`"server-only"`import）を直接importできない点は
+  ハマりやすいので、DB直接操作が要る場合はPrismaクライアントを自前で組み立てる。
+
+---
+
 ## loop 48 — 予約申込フォームの自動入力（2026-08-18）
 
 ### 経緯
