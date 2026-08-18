@@ -92,6 +92,7 @@
 - [x] Lint 一掃（ESLint エラー 0 / cart の永続復元に理由付き個別無効化） (loop 32)
 - [x] Playwrightでの動作確認基盤（`web/scripts/e2e/`、SKILL.mdに手順を明記） (loop 49)
 - [x] Playwright e2e: マイページからのオンライン決済フロー（`scripts/e2e/payment-flow.mjs`） (loop 50)
+- [x] Playwright e2e: 管理画面のレビュー削除（モデレーション）（`scripts/e2e/admin-review-moderation.mjs`） (loop 51)
 
 ## 保留・要確認
 
