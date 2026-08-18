@@ -5,6 +5,46 @@
 
 ---
 
+## loop 47 — 管理画面にレビュー管理（削除）を追加（2026-08-18）
+
+### やったこと
+- **Gitブランチの異常を検出・修正**：ループ開始時、作業ディレクトリのブランチが
+  `master`（loop 46 のコミット `c125756` を含む）から `claude/loop-instruction-skill-3adxwh`
+  （それを含まない古い状態）に切り替わっていることを発見。ユーザー操作外の変化だったため、
+  ユーザーに確認（AskUserQuestion）した上で `master` に戻して続行。コミット自体は失われて
+  いなかった（`git log --all` で両ブランチから到達可能なことを確認済み）。
+- ROADMAP残タスクを確認（環境制約2件は変わらず）。誰でも自由な文面でレビュー投稿できる一方、
+  管理側に非表示・削除の手段が無い点はギャップと判断し、「管理画面（loop 19〜22）」の下に
+  レビュー管理（モデレーション）を新規タスクとして追記した上で着手。
+- `lib/review-repository.ts`: 商品名付き合わせロジックを `attachKimonoNames` に共通化し
+  （`getLatestReviews` もこちらを利用するようリファクタ）、`getAllReviewsForAdmin`（全件・新しい順、
+  商品削除済みなら「(削除済み商品)」表示）と `deleteReview(id)` を追加。
+- `lib/actions/admin-review.ts`: `deleteReviewAction`（削除後に `/admin/reviews`・該当商品詳細・
+  トップページを revalidate）。`/admin` 配下なので middleware の Basic認証で保護される
+  （`updateReservationStatus` と同じ方針）。
+- `components/DeleteReviewButton.tsx`（`CancelButton` を踏襲：確認ダイアログ→送信→`router.refresh()`）。
+- `app/admin/reviews/page.tsx`（一覧・星評価・投稿日・商品名リンク・削除ボタン、0件時の空表示）。
+  管理レイアウトのナビゲーションに「レビュー管理」を追加。
+
+### 結果
+- ESLint 0件・vitest 53件パス・`next build` 成功（`/admin/reviews` ルート追加を確認）。
+- 本番ビルドを起動し実地確認：Basic認証なしは401、認証ありは200。テストレビューを1件投入して
+  一覧に表示されること、DB上で削除すると一覧が即座に0件表示（`force-dynamic` でキャッシュなし）
+  に戻ることを確認。`deleteReviewAction`/`DeleteReviewButton` 自体はブラウザ未使用のため未クリック
+  検証だが、`updateReservationStatus`/`StatusControl` と全く同型の実装。
+- 確認に使った一時レビュー・一時スクリプトはすべて削除済み。`git status` はコード差分のみ。
+
+### 気づき・次への申し送り
+- **環境の再確認事項**：この作業ディレクトリは前回に続き `web/node_modules` 等が揮発する場合が
+  あるほか、今回は**作業ブランチ自体がセッション外要因で切り替わる**ことも起こり得ると判明。
+  次ループ開始時は `git branch --show-current` と `git log --oneline -3` で
+  「`master` か」「loop番号が最新か」を必ず確認し、ズレていれば独断で書き換えず一旦ユーザーに確認する。
+- ROADMAPの残タスクは環境制約2件（Capacitor実機ビルド／GCP実デプロイ）のみに戻った。
+  新機能を追加する場合は今回同様「既存機能の明確なギャップを埋める」範囲に留め、大きな方針転換は
+  ユーザー確認を挟む。
+
+---
+
 ## loop 46 — トップページに「お客様の声」を表示（2026-08-18）
 
 ### やったこと

@@ -19,6 +19,9 @@ export default function AdminLayout({ children }: LayoutProps<"/admin">) {
             >
               予約一覧
             </Link>
+            <Link href="/admin/reviews" className="transition hover:text-kin">
+              レビュー管理
+            </Link>
             <Link href="/" className="text-washi/70 transition hover:text-kin">
               サイトへ →
             </Link>
