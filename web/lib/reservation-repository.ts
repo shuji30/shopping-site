@@ -34,6 +34,27 @@ export async function getReservationsByUser(userId: string) {
   });
 }
 
+export type LatestReservationContact = {
+  kana: string | null;
+  tel: string;
+  method: string;
+  address: string | null;
+};
+
+/**
+ * 指定ユーザーの直近の予約から、予約申込フォームの初期値に使える連絡先情報を取得する
+ * （フリガナ・電話番号・受取方法・配送先住所）。予約履歴が無ければ null。
+ */
+export async function getLatestReservationContact(
+  userId: string,
+): Promise<LatestReservationContact | null> {
+  return prisma.reservation.findFirst({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    select: { kana: true, tel: true, method: true, address: true },
+  });
+}
+
 /** ダッシュボード用の集計（件数・売上合計・入金状況） */
 export async function getReservationStats() {
   const [count, sum, paidCount, paidSum] = await Promise.all([

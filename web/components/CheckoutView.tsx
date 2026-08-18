@@ -33,6 +33,9 @@ const initialForm: FormState = {
   note: "",
 };
 
+/** ログイン中なら会員情報＋直近の予約内容で埋める初期値（サーバー側で取得して渡す） */
+type InitialValues = Partial<Omit<FormState, "note">>;
+
 function validate(form: FormState): Errors {
   const errors: Errors = {};
   if (!form.name.trim()) errors.name = "お名前を入力してください。";
@@ -48,9 +51,16 @@ function validate(form: FormState): Errors {
   return errors;
 }
 
-export function CheckoutView() {
+export function CheckoutView({
+  initialValues,
+}: {
+  initialValues?: InitialValues;
+}) {
   const { items, total, count, ready, clear } = useCart();
-  const [form, setForm] = useState<FormState>(initialForm);
+  const [form, setForm] = useState<FormState>({
+    ...initialForm,
+    ...initialValues,
+  });
   const [errors, setErrors] = useState<Errors>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -189,6 +199,11 @@ export function CheckoutView() {
     <div className="mt-8 grid gap-8 lg:grid-cols-3">
       {/* フォーム */}
       <form onSubmit={handleSubmit} className="space-y-5 lg:col-span-2" noValidate>
+        {initialValues && (
+          <p className="rounded-md bg-kon/5 px-4 py-3 text-xs text-sumi/70">
+            会員情報と前回のご注文内容から自動入力しています。内容は自由に変更できます。
+          </p>
+        )}
         <div>
           <label htmlFor="name" className="text-sm font-medium text-sumi/80">
             お名前 <span className="text-enji">*</span>

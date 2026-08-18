@@ -5,6 +5,45 @@
 
 ---
 
+## loop 48 — 予約申込フォームの自動入力（2026-08-18）
+
+### 経緯
+- ユーザーからローカル確認中に「予約申し込みでいちいち情報をいれるのはなぜ？」と指摘。
+  調査の結果、`CheckoutView` の初期値が常に空文字列で、ログイン中でも会員情報・過去の
+  予約内容を一切参照していないことが判明（実装漏れ）。対応範囲をユーザーに確認し、
+  「ログイン中のみ自動入力」で合意。
+
+### やったこと
+- `lib/reservation-repository.ts`: `getLatestReservationContact(userId)` を追加
+  （直近の予約から kana/tel/method/address を取得。履歴が無ければ null）。
+- `app/(site)/checkout/page.tsx`: サーバーコンポーネント化し、`getCurrentUser()` と
+  `getLatestReservationContact()` から初期値（name/email/kana/tel/method/address）を
+  組み立てて `CheckoutView` に渡す。未ログイン時は `undefined`（従来通り空フォーム）。
+- `components/CheckoutView.tsx`: `initialValues` プロップを受け取り
+  `{ ...initialForm, ...initialValues }` で初期状態に反映。自動入力時は
+  「会員情報と前回のご注文内容から自動入力しています」という案内文をフォーム上部に表示
+  （値は全て編集可能な通常の controlled input のまま）。
+
+### 結果
+- ESLint 0・テスト 53 件パス・`next build` 成功（`/checkout` は引き続き dynamic）。
+- `getLatestReservationContact` と同一クエリを直接実行し、既存のテストアカウント
+  （`shuji30@gmail.com`、予約履歴あり）に対して kana/tel/method/address が正しく返る
+  ことを確認。存在しないユーザーIDでは null を返すことも確認。
+- 開発サーバーを再起動し `/`・`/checkout`・`/login` が200、未ログインの `/mypage` が
+  307（ログインへリダイレクト）であることを確認。
+- **未検証の範囲**：この環境には chromium-cli 等のブラウザ自動操作ツールが無く、
+  `CheckoutView` はカート状態を localStorage から読むクライアントコンポーネントのため、
+  実際に入力欄へ値が反映される様子は curl では確認できない（SSR時点では読み込み中表示に
+  なるため）。ユーザーに実ブラウザでの確認を依頼した。
+
+### 気づき・次への申し送り
+- ゲスト（未ログイン）の自動入力は今回スコープ外（ユーザーの選択）。要望があれば
+  localStorage を使ったゲスト向け自動入力を別ループで追加できる。
+- 決済フローについても同様の質問があったため、`/orders`・`/mypage` からの
+  ワンクリック決済という設計を口頭で説明済み（コード変更なし）。
+
+---
+
 ## loop 47 — 管理画面にレビュー管理（削除）を追加（2026-08-18）
 
 ### やったこと
