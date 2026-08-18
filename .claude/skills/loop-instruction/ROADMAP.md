@@ -91,6 +91,7 @@
 - [x] テスト基盤（Vitest）＋ドメインロジックの単体テスト（date/status/categories, 22件） (loop 31)
 - [x] Lint 一掃（ESLint エラー 0 / cart の永続復元に理由付き個別無効化） (loop 32)
 - [x] Playwrightでの動作確認基盤（`web/scripts/e2e/`、SKILL.mdに手順を明記） (loop 49)
+- [x] Playwright e2e: マイページからのオンライン決済フロー（`scripts/e2e/payment-flow.mjs`） (loop 50)
 
 ## 保留・要確認
 
