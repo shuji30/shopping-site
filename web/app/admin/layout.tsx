@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { appVersion } from "@/lib/version";
 
 // 管理画面共通レイアウト（店舗フロントとは別のヘッダー）
 export default function AdminLayout({ children }: LayoutProps<"/admin">) {
@@ -29,6 +30,9 @@ export default function AdminLayout({ children }: LayoutProps<"/admin">) {
         </div>
       </header>
       <main className="flex-1">{children}</main>
+      <footer className="border-t border-kin/20 bg-washi-dark px-4 py-3 text-center text-xs text-sumi/50">
+        雅 管理画面 v{appVersion}
+      </footer>
     </div>
   );
 }

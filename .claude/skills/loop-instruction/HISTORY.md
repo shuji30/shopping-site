@@ -5,6 +5,49 @@
 
 ---
 
+## loop 57 — 管理画面フッターにバージョン表示を追加（2026-08-19）
+
+### 経緯
+- ユーザーから「CDを試しに発火して」の一連の作業（gh CLI導入・master push・
+  実デプロイ成功）の後、「adminのBasic認証にログインできない」との報告 →
+  ローカルの`.env`と本番Secret Managerのパスワードが別物という混同と判明・解決。
+- その流れで「何を変更したのかわからないので、admin画面のフッターに
+  バージョン情報を載せてほしい」との要望（スキルへの追加として）。
+  バージョン形式: `X.Y.Z`＝Xは人間が変更／Yはmasterへのpush回数／Zはその
+  pushに含まれるコミット数（push毎に0から数え直す）。
+
+### やったこと
+- `web/lib/version.ts`: `APP_VERSION`環境変数を読む（未設定時は
+  `package.json`のメジャー値から`X.0.0-dev`を表示）。
+- `web/app/admin/layout.tsx`: フッターに`雅 管理画面 v{バージョン}`を表示。
+- `web/package.json`: version を `0.1.0` → `0.0.0` に変更
+  （X=0のみ人間が管理する値とし、Y/Zはコード側に保持しない）。
+- `.github/workflows/deploy.yml`: デプロイのたびに
+  X（package.jsonのメジャー値）・Y（`github.run_number`）・
+  Z（`git rev-list --count <push前SHA>..<push後SHA>`、push以外は0）を算出し、
+  `gcloud run deploy --update-env-vars APP_VERSION=X.Y.Z` で反映
+  （`--update-env-vars`は差分適用のため、既存のDATABASE_URL等は維持される）。
+  `actions/checkout`に`fetch-depth: 0`を追加（コミット数算出に全履歴が必要）。
+- SKILL.mdに「バージョン表示」節を新設。あわせて「Git運用」節の
+  「デプロイは手動のまま」という記述が loop56 で古くなっていたため、
+  CI/CDが実際に動く現状に合わせて修正。
+
+### 結果
+- ESLint 0・vitest 53件パス・`next build`成功。
+- ローカルの`.env`のADMIN_PASSWORDが不明（以前と変わっていた）だったため、
+  値を読まずに`ADMIN_PASSWORD=verify1234 npm run dev`で一時上書きして
+  Playwrightで確認：フッターに`雅 管理画面 v0.0.0-dev`と正しく表示。
+- 本番への反映はこのコミットが`master`へpushされた後、CD一巡目のデプロイで
+  初めて`APP_VERSION`（例: `0.<run_number>.<コミット数>`）が設定される
+  （このループの時点では未反映）。
+
+### 気づき・次への申し送り
+- ローカル開発時は常に`X.0.0-dev`表示になる仕様（Y/Zは本番デプロイでのみ意味を持つ）。
+- 今後`master`にpushするたびにYが1つずつ増える。Zはその回のpushに含まれる
+  コミット数なので、developで細かくコミットするほど大きくなる（累積ではない）。
+
+---
+
 ## loop 56 — CI/CD構築（GitHub Actions + Workload Identity Federation）（2026-08-19）
 
 ### 経緯

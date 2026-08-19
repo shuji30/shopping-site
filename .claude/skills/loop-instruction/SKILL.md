@@ -185,9 +185,31 @@ MVP のゴールにすべてチェックが付いたら、次フェーズへ進�
   ローカルで `develop`→`master` へのマージ作業を求められた場合も、
   最終的な `git push origin master` の実行はユーザーに委ね、
   自分では実行しない。
-- 実際のCloud Run等へのデプロイ手順自体（`docs/DEPLOY-GCP.md`）はこれとは別軸。
-  「`master`にpushしたら自動デプロイされる」という仕組みは今のところ無く、
-  デプロイは手動の `gcloud builds submit`→`gcloud run deploy` のまま。
+- **`master` への push は CI/CD（GitHub Actions）を自動的にトリガーする**
+  （loop 56 で構築。詳細は `web/docs/CI-CD.md`）。`develop`/`master` への
+  push・PRで lint/test/build（CI）、`master` への push（人間が行う）で
+  Cloud Runへの自動デプロイ（CD）が走る。**つまり `master` への push は
+  即座に本番へ反映される**ということを踏まえて、マージ前に内容を確認すること。
+
+---
+
+## バージョン表示（管理画面フッター）
+
+「何が変更されたか分からない」を防ぐため、管理画面（`/admin`配下）のフッターに
+アプリのバージョン `X.Y.Z` を表示する（loop 57）。
+
+- **X（メジャー）**: 人間が `web/package.json` の `version` を直接編集して変更する。
+  Claudeは指示が無い限りXを変更しない。
+- **Y（マイナー）**: `master` への push 回数。CD（`deploy.yml`）が
+  `github.run_number` を使って自動算出し、Cloud Runの環境変数 `APP_VERSION`
+  として設定する。コード側で保持・カウントする値ではない。
+- **Z（パッチ）**: その push に含まれるコミット数。CDが
+  `git rev-list --count <push前SHA>..<push後SHA>` で算出する。**push のたびに
+  0から数え直す**（累積し続けるものではない）。
+- 実装は `web/lib/version.ts`（`APP_VERSION` 環境変数を読む。未設定時は
+  ローカル開発向けに `X.0.0-dev` を表示）と `app/admin/layout.tsx` のフッター。
+- ローカル開発では `APP_VERSION` は設定されないため、常に `X.0.0-dev` と表示される
+  （実際のY・Zを見たい場合は本番URLで確認する）。
 
 ---
 
