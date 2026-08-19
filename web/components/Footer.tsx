@@ -22,6 +22,9 @@ export function Footer() {
             <Link href="/orders" className="transition-colors hover:text-kon">
               予約照会
             </Link>
+            <Link href="/legal" className="transition-colors hover:text-kon">
+              特定商取引法に基づく表記
+            </Link>
           </nav>
         </div>
         <p className="mt-8 text-xs text-sumi/50">
