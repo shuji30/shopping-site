@@ -12,7 +12,7 @@
 // （削除確認自体が目的だが、削除操作に失敗した場合に備えて finally でも保証する）。
 //
 // 参照: .claude/skills/loop-instruction/SKILL.md の「Playwrightでの動作確認」節。
-import { chromium } from "@playwright/test";
+import { launchChromium } from "./browser.mjs";
 import { randomUUID } from "node:crypto";
 import { prisma } from "../../lib/db.ts";
 
@@ -32,7 +32,7 @@ async function cleanup() {
   await prisma.$disconnect();
 }
 
-const browser = await chromium.launch();
+const browser = await launchChromium();
 try {
   const page = await browser.newPage();
 

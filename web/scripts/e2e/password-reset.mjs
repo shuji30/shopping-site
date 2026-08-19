@@ -14,7 +14,7 @@
 // このスクリプトが作成したテストユーザーは、成功/失敗を問わず最後に自己削除する。
 //
 // 参照: .claude/skills/loop-instruction/SKILL.md の「Playwrightでの動作確認」節。
-import { chromium } from "@playwright/test";
+import { launchChromium } from "./browser.mjs";
 import { randomUUID } from "node:crypto";
 import { prisma } from "../../lib/db.ts";
 
@@ -38,7 +38,7 @@ async function cleanup() {
   await prisma.$disconnect();
 }
 
-const browser = await chromium.launch();
+const browser = await launchChromium();
 try {
   const page = await browser.newPage();
 

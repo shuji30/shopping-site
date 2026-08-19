@@ -5,6 +5,48 @@
 
 ---
 
+## loop 64 — e2e 実行基盤の安定化（launchChromium・待機競合・古い手順）（2026-08-19）
+
+### 経緯
+- `/loop 20min` を別ブランチ（`claude/20min-loop-9zr372`）で回していたところ、
+  同じ loop 62（入金ステータスの手動更新）を develop 側でも実装済みだと判明。
+  **重複コミットは破棄**し、develop に無かった知見だけを本ループとして取り込んだ
+  （以降のループは develop で回す方針をユーザーと合意）。
+
+### やったこと
+- `scripts/e2e/browser.mjs`（新規）: `launchChromium()` を追加。
+  `$PLAYWRIGHT_BROWSERS_PATH/chromium` が存在すれば `executablePath` として渡す
+  （`E2E_CHROMIUM_PATH` で明示指定も可）。既存 e2e 6本をすべてこれ経由に移行。
+- `scripts/e2e/admin-payment-status.mjs`: 更新完了の待ち方を修正。
+- `scripts/e2e/checkout-autofill.mjs` / `payment-flow.mjs`: signup 手順を現行仕様へ修正
+  （`#password-confirm` の入力を追加、`button[type=submit]` → `button:has-text('登録する')`）。
+- SKILL.md の「Playwrightでの動作確認」に上記3点の知見を追記。
+
+### つまずいた点
+- **`chromium.launch()` がこの環境で動かない**。`@playwright/test` の版と環境同梱
+  Chromium のリビジョンがずれており、`chromium_headless_shell-1234` を探して落ちる。
+  実体は `/opt/pw-browsers/chromium`（symlink）にあるので、これを明示的に渡す形にした。
+- **「返金済み」ボタンを押してから `waitForSelector("text=返金済み")` で待つのは無意味**。
+  押したボタン自身がその文言を含むため即成立し、直後のDB読み取りが更新前の値になる
+  （`paid` を期待して `unpaid` を読む形で1手ずれる）。`disabled` 待ちも同様に不可
+  （更新中は全ボタンが disabled になるため）。見出し横のバッジで待つ形に変更。
+- **loop 60 の仕様変更で e2e 2本が壊れたまま放置されていた**。会員登録に確認用
+  パスワードが増えたのに signup 手順が古く、`/mypage` への遷移待ちでタイムアウトしていた。
+
+### 結果
+- ESLint 0・vitest 53件パス。
+- e2e **6本すべて PASS**（admin-payment-status / admin-review-moderation /
+  checkout-autofill / password-reset / payment-flow / signup-password-confirm）。
+
+### 気づき・次への申し送り
+- 同じ課題を複数セッションで並行実装すると丸ごと重複する。ループを回す前に
+  `git fetch` して develop の最新を確認すること（今回の再発防止）。
+- 破棄した重複ブランチ `claude/20min-loop-9zr372` は origin に残してある。不要なら削除可。
+- 残タスク: 「商品一覧のページネーション」「予約入力バリデーションの純粋関数化＋テスト」
+  「Capacitor の実機ビルド（要 macOS/Android Studio）」。
+
+---
+
 ## loop 63 — /legal（特定商取引法に基づく表記）ページを追加（自律ループ）（2026-08-19）
 
 ### 経緯

@@ -118,6 +118,8 @@ MVP のゴールにすべてチェックが付いたら、次フェーズへ進�
    timeout 40 bash -c 'until curl -sf http://localhost:3000 >/dev/null; do sleep 1; done'
    ```
 2. 検証したい操作を1本のスクリプトに書き、`npx tsx scripts/e2e/<name>.mjs` で実行する。
+   ブラウザの起動は `chromium.launch()` を直接呼ばず、必ず
+   `scripts/e2e/browser.mjs` の `launchChromium()` を使う（下記「つまずきやすい点」参照）。
    既存の `scripts/e2e/checkout-autofill.mjs`（ログイン→カート追加→チェックアウトの
    自動入力確認）を雛形にする。`chromium.launch()` → `page.goto/fill/click` →
    `page.inputValue`/`page.locator(...).count()` でアサート、というのが基本パターン。
@@ -170,6 +172,21 @@ MVP のゴールにすべてチェックが付いたら、次フェーズへ進�
   （ローカルのHTTPでは問題ない。loop 52で実際に発生）。確実に動くのは
   `page.setExtraHTTPHeaders({ Authorization: "Basic " + Buffer.from("user:pass").toString("base64") })`
   を使う方式（`admin-review-moderation.mjs` 参照）。迷ったらこちらを使う。
+- **`chromium.launch()` を直接呼ぶと環境によっては起動できない**。`@playwright/test` の
+  バージョンと、実行環境が用意している Chromium（`PLAYWRIGHT_BROWSERS_PATH`）の
+  リビジョンがずれていると `Executable doesn't exist at .../chromium_headless_shell-<rev>`
+  で落ちる（loop 64 で実際に発生）。`scripts/e2e/browser.mjs` の `launchChromium()` は
+  `$PLAYWRIGHT_BROWSERS_PATH/chromium` があればそれを `executablePath` に渡すので、
+  **新しいスクリプトでも必ずこれを使う**（`E2E_CHROMIUM_PATH` で明示指定も可）。
+- **「押したボタン自身の文言」で更新完了を待たない**。`StatusControl` /
+  `PaymentControl` は更新中に *全*ボタンを disabled にする（`disabled={pending || active}`）
+  ため、`waitForSelector("text=返金済み")` や `button:has-text(...)[disabled]` は
+  クリック直後に成立してしまい、直後のDB読み取りが更新前の値になる（loop 64 で実際に発生）。
+  見出し横のバッジなど、**サーバー反映後にしか変わらない要素**で待つこと。
+- **UI仕様を変えたら既存のe2eも直す**。loop 60 で会員登録に確認用パスワードが増えた際、
+  `checkout-autofill.mjs` / `payment-flow.mjs` の signup 手順が古いまま残り、
+  タイムアウトで落ちる状態になっていた（loop 64 で修正）。共通フロー（signup/login/
+  checkout）を変えたときは `scripts/e2e/` を横断で確認する。
 - **ログイン中はヘッダーにも `<button type="submit">ログアウト</button>` が存在する**。
   `page.click("button[type=submit]")` のような曖昧なセレクタだと、目的のフォームでは
   なくヘッダーのログアウトボタンを誤ってクリックし、意図せずログアウト＆ホームへ

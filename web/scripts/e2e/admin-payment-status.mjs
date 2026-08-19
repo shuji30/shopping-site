@@ -12,7 +12,7 @@
 // このスクリプトが作成したテストユーザー・予約は、成功/失敗を問わず最後に自己削除する。
 //
 // 参照: .claude/skills/loop-instruction/SKILL.md の「Playwrightでの動作確認」節。
-import { chromium } from "@playwright/test";
+import { launchChromium } from "./browser.mjs";
 import { randomUUID, randomInt } from "node:crypto";
 import { prisma } from "../../lib/db.ts";
 
@@ -40,7 +40,7 @@ async function cleanup() {
   await prisma.$disconnect();
 }
 
-const browser = await chromium.launch();
+const browser = await launchChromium();
 try {
   const page = await browser.newPage();
 
@@ -85,7 +85,13 @@ try {
   });
   await adminPage.goto(`${BASE}/admin/reservations/${reservation.id}`);
   await adminPage.click("button:has-text('返金済み')");
-  await adminPage.waitForSelector("text=返金済み");
+  // 「text=返金済み」で待つと、押したボタン自身がその文言を含むためクリック直後に
+  // 成立してしまい、DBを読むタイミングが1手ずれる（更新前の値を読む）。
+  // 反映の完了は、見出し横の入金バッジが「返金済み」に変わったことで判定する。
+  await adminPage
+    .locator("h1:has-text('予約詳細') ~ span", { hasText: "返金済み" })
+    .first()
+    .waitFor({ timeout: 15_000 });
   console.log("admin badge updated to refunded");
 
   const afterUpdate = await prisma.reservation.findUnique({ where: { id: reservation.id } });

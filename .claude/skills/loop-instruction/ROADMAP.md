@@ -115,6 +115,9 @@
 - [x] Playwrightでの動作確認基盤（`web/scripts/e2e/`、SKILL.mdに手順を明記） (loop 49)
 - [x] Playwright e2e: マイページからのオンライン決済フロー（`scripts/e2e/payment-flow.mjs`） (loop 50)
 - [x] Playwright e2e: 管理画面のレビュー削除（モデレーション）（`scripts/e2e/admin-review-moderation.mjs`） (loop 51)
+- [x] e2e 実行基盤の安定化 — 環境同梱Chromiumを使う `scripts/e2e/browser.mjs`
+      （`launchChromium()`）を追加して既存6本を移行、更新完了待ちの競合を修正、
+      loop 60 の仕様変更で壊れていた signup 手順を修正。e2e 6本すべてPASS (loop 64)
 - [x] リポジトリ直下の古いMonaca/Cordova残骸を削除（`config.xml`・`platforms/`・
       `www/`・`res/`・`.monaca/`。現行プロジェクト（`web/`）とは無関係だった） (loop 58)
 - [ ] 予約入力バリデーションの純粋関数化＋テスト（`CheckoutView.tsx`内のインライン検証を
