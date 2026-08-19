@@ -5,6 +5,50 @@
 
 ---
 
+## loop 67 — 予約入力バリデーションを純粋関数へ切り出し（2026-08-19）
+
+### 経緯
+- ROADMAP の残タスク（環境的に不可な Capacitor 実機ビルドを除く最後の1件）。
+  検証ロジックが `CheckoutView.tsx` のインライン関数にあり、テストできない状態だった。
+
+### やったこと
+- `lib/reservation-validation.ts`（新規）: DOM にも Prisma にも依存しない純粋関数群。
+  - `validateReservationForm(values)` … フィールド別のエラーメッセージを返す
+  - `isValidEmail` / `isReceiveMethod` / `hasErrors` / `firstErrorMessage`
+  - `firstErrorMessage` は入力欄の並び順（name → email → tel → address）で1件返す。
+    フィールド単位で表示できないサーバー側向け。
+- `components/CheckoutView.tsx`: ローカルの `validate` と `Errors` 型を削除し、
+  共通関数・共通型（`ReservationErrors` / `ReceiveMethod`）を使うよう置換。
+- `lib/actions/reservation.ts`: 独自に書かれていた必須チェックを同じ関数に置き換え。
+  **サーバー側でもメール形式を検証するようになった**（従来は presence のみで、
+  文言も「必須項目が入力されていません。」と大雑把だった）。サーバーアクションは
+  クライアントを通さず直接呼べるので、ここが実質的な最終防衛線になる。
+- `tests/reservation-validation.test.ts`（新規, 16件）: 正常系・各項目の必須・
+  メール形式・店頭受取なら住所不要・住所 undefined・複数同時エラー・`firstErrorMessage` の順序。
+- `scripts/e2e/checkout-validation.mjs`（新規）: 未入力送信で4件のエラーが同時に出て
+  送信されない／メール形式エラーへの切り替わり／店頭受取で住所欄が消える／
+  正しい入力で申込完了（DBに `method: "store"` で保存）を確認。
+
+### 気づき
+- クライアントとサーバーで検証が二重に書かれていると、文言だけでなく**厳しさ**もずれる
+  （今回はサーバー側にメール形式チェックが無かった）。共通化の主目的は重複排除より
+  このズレの解消だった。
+- `lib/` 配下でも `"server-only"` を import しなければクライアントコンポーネントから
+  使える。純粋ロジックを置く場所として問題ない。
+
+### 結果
+- ESLint 0・vitest **84件パス**（68→84）・`next build` 成功。
+- `npx tsx scripts/e2e/checkout-validation.mjs` **PASS**（4項目すべて確認）。
+
+### 気づき・次への申し送り
+- **ROADMAP の実行可能な残タスクはこれでゼロ**。残るのは
+  「Capacitor の ios/android 実機ビルド」のみで、macOS+Xcode / Android Studio が
+  必要なためこの環境では実施できない（手順は `web/docs/CAPACITOR-runbook.md`）。
+- 次に進めるなら、新しいフェーズの目的をユーザーと合意してから ROADMAP に起票すること
+  （禁止事項「目的・ゴールから外れた作業を勝手に追加しない」）。
+
+---
+
 ## loop 66 — 商品一覧のページネーション（8件/頁）（2026-08-19）
 
 ### 経緯

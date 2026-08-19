@@ -8,8 +8,12 @@ import {
   createReservation,
   type ReservationLine,
 } from "@/lib/actions/reservation";
-
-type ReceiveMethod = "delivery" | "store";
+import {
+  hasErrors,
+  validateReservationForm,
+  type ReceiveMethod,
+  type ReservationErrors,
+} from "@/lib/reservation-validation";
 
 interface FormState {
   name: string;
@@ -20,8 +24,6 @@ interface FormState {
   address: string;
   note: string;
 }
-
-type Errors = Partial<Record<keyof FormState, string>>;
 
 const initialForm: FormState = {
   name: "",
@@ -35,21 +37,6 @@ const initialForm: FormState = {
 
 /** ログイン中なら会員情報＋直近の予約内容で埋める初期値（サーバー側で取得して渡す） */
 type InitialValues = Partial<Omit<FormState, "note">>;
-
-function validate(form: FormState): Errors {
-  const errors: Errors = {};
-  if (!form.name.trim()) errors.name = "お名前を入力してください。";
-  if (!form.email.trim()) {
-    errors.email = "メールアドレスを入力してください。";
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-    errors.email = "メールアドレスの形式が正しくありません。";
-  }
-  if (!form.tel.trim()) errors.tel = "電話番号を入力してください。";
-  if (form.method === "delivery" && !form.address.trim()) {
-    errors.address = "配送先のご住所を入力してください。";
-  }
-  return errors;
-}
 
 export function CheckoutView({
   initialValues,
@@ -66,7 +53,7 @@ export function CheckoutView({
   const hasOrderHistory = Boolean(
     initialValues?.tel || initialValues?.address || initialValues?.kana,
   );
-  const [errors, setErrors] = useState<Errors>({});
+  const [errors, setErrors] = useState<ReservationErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [done, setDone] = useState<{
@@ -82,9 +69,9 @@ export function CheckoutView({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const errs = validate(form);
+    const errs = validateReservationForm(form);
     setErrors(errs);
-    if (Object.keys(errs).length > 0) return;
+    if (hasErrors(errs)) return;
 
     setSubmitting(true);
     setSubmitError(null);

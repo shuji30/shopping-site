@@ -5,6 +5,11 @@ import { isRangeAvailable } from "@/lib/availability";
 import { getCurrentUser } from "@/lib/auth";
 import { sendMail } from "@/lib/mail";
 import { reservationConfirmationEmail } from "@/lib/mail-templates";
+import {
+  firstErrorMessage,
+  hasErrors,
+  validateReservationForm,
+} from "@/lib/reservation-validation";
 
 export interface ReservationItemInput {
   kimonoId: string;
@@ -56,12 +61,17 @@ function makeOrderNumber(): string {
 export async function createReservation(
   input: ReservationInput,
 ): Promise<ReservationResult> {
-  // 基本バリデーション（クライアントに加えてサーバーでも確認）
-  if (!input.name?.trim() || !input.email?.trim() || !input.tel?.trim()) {
-    return { ok: false, error: "必須項目が入力されていません。" };
-  }
-  if (input.method === "delivery" && !input.address?.trim()) {
-    return { ok: false, error: "配送先住所が入力されていません。" };
+  // 入力検証はクライアントと同じ純粋関数を使う（判定・文言のズレを防ぐ）。
+  // サーバーアクションは直接呼べるので、クライアントを通らない入力も想定して必ず実行する。
+  const errors = validateReservationForm({
+    name: input.name,
+    email: input.email,
+    tel: input.tel,
+    method: input.method,
+    address: input.address,
+  });
+  if (hasErrors(errors)) {
+    return { ok: false, error: firstErrorMessage(errors) };
   }
   if (!input.items?.length) {
     return { ok: false, error: "カートに商品がありません。" };

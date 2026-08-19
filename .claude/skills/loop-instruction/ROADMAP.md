@@ -118,15 +118,15 @@
 - [x] 入金ステータス判定の純粋関数化 — `paymentStatuses`（選択肢の唯一の定義）と
       `isPayable`（未払いのときだけ支払い導線を出す）に切り出し、UI・サーバー
       アクションの分岐を統一。単体テスト3件追加（53→56件） (loop 65)
+- [x] Playwright e2e: 予約申込フォームの入力検証（`scripts/e2e/checkout-validation.mjs`） (loop 67)
 - [x] Playwright e2e: 商品一覧のページネーション（`scripts/e2e/kimonos-pagination.mjs`） (loop 66)
 - [x] e2e 実行基盤の安定化 — 環境同梱Chromiumを使う `scripts/e2e/browser.mjs`
       （`launchChromium()`）を追加して既存6本を移行、更新完了待ちの競合を修正、
       loop 60 の仕様変更で壊れていた signup 手順を修正。e2e 6本すべてPASS (loop 64)
 - [x] リポジトリ直下の古いMonaca/Cordova残骸を削除（`config.xml`・`platforms/`・
       `www/`・`res/`・`.monaca/`。現行プロジェクト（`web/`）とは無関係だった） (loop 58)
-- [ ] 予約入力バリデーションの純粋関数化＋テスト（`CheckoutView.tsx`内のインライン検証を
-      `lib/`配下の純粋関数に切り出す。`claude/loop-instruction-skill-continue-ruwp7i` の
-      loop 38 相当を現行実装向けに作り直す）
+- [x] 予約入力バリデーションの純粋関数化＋テスト（`lib/reservation-validation.ts` に切り出し、
+      `CheckoutView` と `createReservation` の両方から同じ関数を使う。単体16件＋e2e追加） (loop 67)
 
 ## 保留・要確認
 
