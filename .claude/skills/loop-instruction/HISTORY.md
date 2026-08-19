@@ -5,6 +5,52 @@
 
 ---
 
+## loop 56 — CI/CD構築（GitHub Actions + Workload Identity Federation）（2026-08-19）
+
+### 経緯
+- ユーザーから「CD/CI設定して」の指示（loop 54でGit運用ルール＝
+  developで開発・masterへのpushで本番反映・pushは人間、を決めた続き）。
+
+### やったこと
+- GCP側（`webprog36`）:
+  - デプロイ用サービスアカウント `github-deployer` を作成し、
+    `roles/run.admin`・`roles/artifactregistry.writer`・
+    `roles/iam.serviceAccountUser` を付与。
+  - Workload Identity Pool（`github-pool`）／Provider（`github-provider`、
+    `shuji30/shopping-site` リポジトリに限定した`attribute-condition`付き）を作成。
+  - このリポジトリからのみ上記サービスアカウントへなりすませるよう
+    `roles/iam.workloadIdentityUser` をバインド。
+  - **サービスアカウントキー（JSON）は発行していない**＝GitHub側にシークレット
+    登録は不要（`google-github-actions/auth`がOIDCトークンで直接認証）。
+- `.github/workflows/ci.yml`: `develop`/`master`へのpush・PRで
+  `npm ci`→`lint`→`test`→`build`（`web/`配下、`DATABASE_URL=file:./dev.db`の
+  ダミー値。実DB接続はしない）。
+- `.github/workflows/deploy.yml`: `master`へのpush（と手動`workflow_dispatch`）を
+  トリガーに、Dockerビルド→Artifact Registry push（タグは`github.sha`）→
+  `gcloud run deploy`。既存の環境変数/シークレット（DATABASE_URL・
+  TURSO_AUTH_TOKEN・ADMIN_PASSWORD等）は明示指定しないことで前リビジョンから
+  引き継がれるようにした。
+- `web/docs/CI-CD.md`: 上記構成の説明とGCP側セットアップコマンドの記録を追加。
+
+### 結果
+- CIワークフローが実行する内容（`npm ci`〜`build`、`.env`無し・ダミー
+  `DATABASE_URL`のみ）を、実際にこのマシン上で`node_modules`/`.next`を
+  作り直して再現し、**lint・test・buildすべて成功**を確認。
+- GitHub Actions自体（実際のワークフロー実行）は、`develop`へのpush後に
+  GitHub側で確認が必要（このセッションでは実行結果まで見ていない）。
+
+### 気づき・次への申し送り
+- **`master`へのpushはこれまで通り人間が行う**が、これからはそのpushが
+  そのまま本番デプロイのトリガーになる点に注意（誤ってmasterにpushすると
+  即座にCloud Runへ反映される）。
+- Playwright e2e（`scripts/e2e/`）はCIに含めていない（Turso/Admin認証の
+  秘密情報をGitHubに置く必要が生じるため）。将来含めるなら、Tursoの
+  検証用DB＋GitHub Secretsの追加が必要になる。
+- 次回`develop`にpushした際、GitHub ActionsのCIが実際に緑になるか
+  確認すること。
+
+---
+
 ## loop 55 — 不要ブランチの整理＋破棄済みブランチからの機能発掘（2026-08-19）
 
 ### 経緯

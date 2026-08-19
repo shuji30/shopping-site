@@ -82,6 +82,10 @@
       DB: Turso（`miyabi`）。Cloud Runサービス `miyabi`（asia-northeast1）にデプロイ済み。
       本番URL・管理画面パスワードはユーザーに別途共有。Playwright e2e 3本
       （閲覧・チェックアウト自動入力・決済・レビュー削除）すべて本番URLでPASS (loop 53)
+- [x] CI/CD（GitHub Actions）— `develop`/`master`へのpush・PRでlint/test/buildを
+      実行するCI、`master`へのpush（＝人間によるレビュー・push後の本番反映）を
+      トリガーにCloud Runへ自動デプロイするCD。認証はWorkload Identity Federation
+      （サービスアカウントキー不要）。詳細は docs/CI-CD.md (loop 56)
 
 ## 通知・その他機能
 

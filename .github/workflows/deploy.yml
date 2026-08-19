@@ -1,0 +1,61 @@
+name: Deploy to Cloud Run
+
+# master への push（＝人間によるレビュー・pushを経た本番反映）をトリガーに
+# 自動デプロイする。workflow_dispatch は手動再実行・動作確認用。
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: webprog36
+  REGION: asia-northeast1
+  SERVICE: miyabi
+  REPOSITORY: miyabi
+  IMAGE: web
+
+permissions:
+  contents: read
+  id-token: write # Workload Identity Federation に必須
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/294448459831/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
+          service_account: "github-deployer@webprog36.iam.gserviceaccount.com"
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and push image
+        working-directory: web
+        run: |
+          IMAGE_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:${{ github.sha }}"
+          docker build -t "$IMAGE_TAG" .
+          docker push "$IMAGE_TAG"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> "$GITHUB_ENV"
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.SERVICE }} \
+            --image "$IMAGE_TAG" \
+            --region "${{ env.REGION }}" \
+            --project "${{ env.PROJECT_ID }}"
+          # DATABASE_URL/TURSO_AUTH_TOKEN/ADMIN_USER/ADMIN_PASSWORD は
+          # 既存リビジョンの設定（Secret Manager参照含む）を自動的に引き継ぐ
+          # （--set-env-vars/--update-secrets を指定しない限り上書きされない）。
+
+      - name: Show service URL
+        run: |
+          gcloud run services describe ${{ env.SERVICE }} \
+            --region "${{ env.REGION }}" \
+            --project "${{ env.PROJECT_ID }}" \
+            --format="value(status.url)"
