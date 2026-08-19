@@ -104,7 +104,11 @@
   - [x] ヘッダーのお気に入り導線（件数バッジ）＋お気に入り一覧ページ（/favorites） (loop 39)
 - [x] トップページに最新レビューの抜粋（「お客様の声」）を表示（loop 42 の申し送り事項） (loop 46)
 - [x] 予約申込フォームの自動入力（ログイン中は会員情報＋直近の予約内容で初期値を埋める） (loop 48)
-- [ ] トップページの PR（宣伝）部分のブラッシュアップ — 集客・訴求まわりの文言とデザインを磨く。
+- [x] トップページの PR（宣伝）部分のブラッシュアップ (loop 69) — 文言を `data/home-content.ts`
+      に分離、料金・レンタル日数・掲載点数は実データから算出（`lib/catalog-summary.ts`）、
+      「カテゴリから探す」を利用シーン主語の「シーンから探す」に置き換え、ヒーローに副CTAと
+      安心材料バーを追加、「お客様の声」を末尾CTAの直前へ移動。
+      〈当初の観点〉集客・訴求まわりの文言とデザインを磨く。
       対象は `app/(site)/page.tsx` のヒーロー（キャッチコピー「晴れの日を、美しい一枚とともに。」・
       リード文・CTAボタン）、「雅が選ばれる理由」（`features`）、「ご利用の流れ」、
       末尾のCTAセクション。観点は次のとおり:
@@ -134,6 +138,7 @@
       - 本番反映を PR 経由にする運用へ変更するか判断し、SKILL.md の「Git運用」節に反映
         （PR必須にするなら、CI（lint/test/build）を merge の必須条件にする設定も併せて検討）
       - PR本文にデプロイ後の確認項目（バージョン表示・主要導線）を定型で載せる
+- [x] Playwright e2e: トップページのPR部分（`scripts/e2e/home-pr.mjs`） (loop 69)
 - [x] Playwright e2e: 予約申込フォームの入力検証（`scripts/e2e/checkout-validation.mjs`） (loop 67)
 - [x] Playwright e2e: 商品一覧のページネーション（`scripts/e2e/kimonos-pagination.mjs`） (loop 66)
 - [x] e2e 実行基盤の安定化 — 環境同梱Chromiumを使う `scripts/e2e/browser.mjs`
