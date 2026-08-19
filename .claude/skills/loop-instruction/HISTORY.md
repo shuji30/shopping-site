@@ -5,6 +5,70 @@
 
 ---
 
+## loop 52 — GCP実デプロイ着手：TursoでDBを無料化＋大きな学び（2026-08-19）
+
+### 経緯
+- ユーザーから「gcpへデプロイ」の指示。調査の結果、**この環境でも `gcloud` が
+  `shuji30@gmail.com` で認証済みで実際にデプロイ可能**と判明（過去のloop 43/45の
+  「環境では不可」という記述は、当時の実行環境の制約であり、常に不可能なわけではなかった）。
+- デプロイ先GCPプロジェクトとDB構成をユーザーに確認。
+  - プロジェクト: 既存の `webprog36` を使用。
+  - DB: 当初案のCloud SQLはサンプルサイトに対し月額固定費が発生するため、
+    ユーザーの意向で **Turso（libSQL無料枠）** に変更。既存コードがSQLite/libSQL
+    アダプタ前提のため、コード変更ゼロで移行できる想定。
+
+### やったこと
+- Turso CLI導入：Windowsにはネイティブビルドが無いため、WSL(Ubuntu-20.04)に
+  インストール。ヘッドレスログイン中継はWSLg経由のChromiumが壊れて失敗したため、
+  ユーザー自身のターミナルで `turso auth login`〜`db create`〜`db tokens create`を
+  実行してもらう方式に変更。
+- `lib/db.ts`: `TURSO_AUTH_TOKEN` 環境変数を読み、`PrismaLibSql`に渡すよう対応。
+  `.env.example`にTurso設定のひな形を追記。
+- 既存の `prisma/migrations/*/migration.sql`（SQLite方言）を `turso db shell` で
+  直接流し込み適用（**Prisma CLIは`libsql://`スキームを直接扱えない**ため
+  `prisma migrate deploy`は使えない。CLI外で直接SQLを適用する方式を確立）。
+- `npm run db:seed` でサンプル商品を投入。
+
+### つまずいた点（大きな学び・すべて解決済み）
+1. **`.env`が読み込まれない**：`next dev/build`はNext.jsが自動で`.env`を読むが、
+   `tsx prisma/seed.ts`のような単体スクリプト実行では読み込まれず、
+   `DATABASE_URL`未設定＝`file:./dev.db`へ静かにフォールバックしていた。
+   これにより「seedは成功したのにTursoには反映されない」という紛らわしい
+   症状になった（一時は「Tursoは書き込み直後の切断でデータをロストする」という
+   誤った仮説を立てて`disconnectSafely`ヘルパーを実装したが、原因はこちらではないと
+   判明し撤回・削除した）。**恒久対策**：`lib/db.ts`の先頭に`import "dotenv/config"`を
+   追加し、どの起動経路でも確実に読み込まれるようにした。
+2. **`curl`でのUI確認が信用できない**：`.env`修正後も`/kimonos`が`curl`で
+   「0件」に見えたが、Playwrightで実ブラウザ確認すると実際は「10件」正しく
+   表示されていた。Next.jsのストリーミングSSRの都合で`curl`は初期シェルの
+   断片しか見られないことがあると判明。**恒久対策**：SKILL.mdに明記し、
+   疑わしい時はcurlでなくPlaywrightで確認するルールを追加。
+- 併せて `prisma/seed.ts` と3本の `scripts/e2e/*.mjs` を、それぞれが個別に
+  `PrismaClient`/`PrismaLibSql`を組み立てていたのをやめ、`lib/db.ts`の
+  `prisma`シングルトンを共通importする形にリファクタ（アダプタ選択ロジックの
+  重複を解消。副作用として、e2eスクリプトの`cleanup()`が`file:./dev.db`に
+  ハードコードされていて**Turso環境では自己クリーンアップが機能しない**という
+  実バグも同時に修正した）。
+
+### 結果
+- Turso上のマイグレーション適用・シード（10件）を確認。
+- Playwright e2e 3本（checkout-autofill / payment-flow / admin-review-moderation）を
+  Turso接続で実行し、**すべてPASS**。cleanup()も正しくTurso上のテストデータを削除。
+- ESLint 0・vitest 53件パス・`next build`成功。
+- docs/DEPLOY-GCP.md を全面改訂：TursoとCloud SQLを選択できる構成にし、
+  Turso向けの手順（`turso db shell`でのマイグレーション適用、Cloud Run
+  デプロイ時のSecret Manager設定）を追加。.claude/skills/loop-instruction/SKILL.md の
+  「つまずきやすい点」も今回の学びで更新。
+
+### 気づき・次への申し送り
+- **次はコンテナビルド〜Cloud Runデプロイ本体**（Artifact Registry push →
+  `gcloud run deploy`、対象プロジェクト`webprog36`）。DB側の準備は完了。
+- 今回の教訓（`.env`未読み込み／`curl`不信）は今後のあらゆるTurso関連・
+  RSCストリーミングページの検証に効いてくるはずなので、次ループ以降も
+  SKILL.mdのこの節を必ず参照すること。
+
+---
+
 ## loop 51 — Playwright e2e: 管理画面のレビュー削除を実地確認（2026-08-18）
 
 ### 経緯

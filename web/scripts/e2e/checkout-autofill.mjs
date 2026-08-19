@@ -13,8 +13,7 @@
 // 参照: .claude/skills/loop-instruction/SKILL.md の「Playwrightでの動作確認」節。
 import { chromium } from "@playwright/test";
 import { randomUUID, randomInt } from "node:crypto";
-import { PrismaClient } from "../../lib/generated/prisma/client.ts";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
+import { prisma } from "../../lib/db.ts";
 
 const BASE = process.env.E2E_BASE_URL ?? "http://localhost:3000";
 const email = `pw-verify-${randomUUID().slice(0, 8)}@example.jp`;
@@ -33,11 +32,11 @@ function log(label) {
   console.log(`\n=== ${label} ===`);
 }
 
-// lib/*.ts は "server-only" を import しているため、Next.js のバンドラを経由しない
-// 素の Node/tsx 実行からはそれらのモジュールを import できない。
-// DB を直接触りたい場合は、このように Prisma クライアントを自前で組み立てる。
+// lib/db.ts 以外の lib/*.ts の多くは "server-only" を import しているため、
+// Next.js のバンドラを経由しない素の Node/tsx 実行からは import できない。
+// lib/db.ts はそのガードが無く、DATABASE_URL に応じたアダプタ選択（SQLite/Postgres/Turso）
+// も内蔵しているので、DBに直接触るスクリプトはここから prisma をそのまま import する。
 async function cleanup() {
-  const prisma = new PrismaClient({ adapter: new PrismaLibSql({ url: "file:./dev.db" }) });
   const user = await prisma.user.findUnique({ where: { email } });
   if (user) {
     await prisma.reservation.deleteMany({ where: { userId: user.id } });

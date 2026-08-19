@@ -1,12 +1,7 @@
 // サンプル商品データを DB へ投入する。既存の data/kimonos.ts を唯一の情報源として利用。
-import { PrismaClient } from "../lib/generated/prisma/client";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
+// アダプタ選択（SQLite/Postgres/Turso）と安全な切断は lib/db.ts に委ねる。
+import { prisma } from "../lib/db";
 import { kimonos } from "../data/kimonos";
-
-const adapter = new PrismaLibSql({
-  url: process.env.DATABASE_URL ?? "file:./dev.db",
-});
-const prisma = new PrismaClient({ adapter });
 
 async function main() {
   for (const k of kimonos) {

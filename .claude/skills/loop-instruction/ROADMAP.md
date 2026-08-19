@@ -69,7 +69,13 @@
 
 - [x] 本番DB（Postgres）対応の下準備 — DATABASE_URL でアダプタ自動選択＋切替手順（loop 30 / docs/DEPLOYMENT.md）
 - [x] GCP(Cloud Run)公開の下準備 — Dockerfile（standalone）＋.dockerignore＋docs/DEPLOY-GCP.md（Cloud Run + Cloud SQL） (loop 45)
-- [ ] 実デプロイ（要 GCPプロジェクト/課金・Cloud SQL作成。この環境では不可・DEPLOY-GCP.md 参照）
+- [x] DB を Turso（libSQL無料枠）にも対応 — コード変更なしで本番運用可能に。
+      `lib/db.ts`にauthToken対応、seed/e2eスクリプトを`lib/db.ts`経由に統一、
+      docs/DEPLOY-GCP.mdにTurso手順を追加 (loop 52)
+- [~] 実デプロイ — **この環境でも `gcloud`(shuji30@gmail.com認証済み)と WSL経由のTurso CLIが
+      実際に使えることが判明**（従来の「環境では不可」という記述は誤りだった）。
+      対象プロジェクト: `webprog36`。DB: Turso（`miyabi`、マイグレーション適用・シード済み、
+      Playwright e2e 3本すべてPASS）。次はコンテナビルド〜Cloud Runデプロイ本体 (loop 52〜)
 
 ## 通知・その他機能
 

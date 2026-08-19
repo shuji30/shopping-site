@@ -14,8 +14,7 @@
 // 参照: .claude/skills/loop-instruction/SKILL.md の「Playwrightでの動作確認」節。
 import { chromium } from "@playwright/test";
 import { randomUUID } from "node:crypto";
-import { PrismaClient } from "../../lib/generated/prisma/client.ts";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
+import { prisma } from "../../lib/db.ts";
 
 const BASE = process.env.E2E_BASE_URL ?? "http://localhost:3000";
 const ADMIN_USER = process.env.ADMIN_USER ?? "admin";
@@ -28,7 +27,6 @@ function log(label) {
 }
 
 async function cleanup() {
-  const prisma = new PrismaClient({ adapter: new PrismaLibSql({ url: "file:./dev.db" }) });
   const r = await prisma.review.deleteMany({ where: { name: reviewerName } });
   if (r.count > 0) console.log("cleaned up", r.count, "leftover review(s)");
   await prisma.$disconnect();

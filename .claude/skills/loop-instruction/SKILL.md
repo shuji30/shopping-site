@@ -128,13 +128,27 @@ MVP のゴールにすべてチェックが付いたら、次フェーズへ進�
 
 ### つまずきやすい点
 
-- **`lib/*.ts` の多くは `"server-only"` を import している**ため、`node`/`tsx` から直接
-  import すると `This module cannot be imported from a Client Component module.` で
-  落ちる。DBに触りたいだけなら、リポジトリ関数を経由せず
-  `new PrismaClient({ adapter: new PrismaLibSql({ url: "file:./dev.db" }) })` を
-  スクリプト側で自前に組み立てる（`checkout-autofill.mjs` のクリーンアップ部分を参照）。
+- **`lib/db.ts` 以外の `lib/*.ts` の多くは `"server-only"` を import している**ため、
+  `node`/`tsx` から直接importすると
+  `This module cannot be imported from a Client Component module.` で落ちる。
+  `lib/db.ts` にはそのガードが無く、DATABASE_URL に応じたアダプタ選択
+  （SQLite/Postgres/Turso）も内蔵しているので、DBに直接触るスクリプトは
+  `import { prisma } from "../../lib/db.ts"` のようにここから import する
+  （各 `scripts/e2e/*.mjs` のクリーンアップ部分を参照）。
 - **`.mjs` から `.ts` を import する**ため `node` ではなく `npx tsx` で実行すること
   （`node` だと拡張子解決やトランスパイルで失敗する）。
+- **プレーンな `tsx` 実行は `.env` を自動で読み込まない**（`next dev`/`next build` は
+  Next.js が自動で読み込むが、`tsx prisma/seed.ts` のような単体スクリプト実行では
+  読み込まれない）。`lib/db.ts` が先頭で `import "dotenv/config"` しているため、
+  そこ経由でDBに触る限りは自動的に解決されるが、**新しいスクリプトを書くときは
+  `lib/db.ts` を経由せず自前で環境変数を読む実装にしない**こと。読み込まれないまま
+  `DATABASE_URL` が未設定だと、`file:./dev.db`（ローカルSQLite）に静かにフォール
+  バックし、「seedしたのに本番/Tursoに反映されない」ような紛らわしい不具合になる。
+- **`curl` は Next.js App Router のストリーミングSSRページの検証には使えないことがある**。
+  この構成のページ（RSCストリーミング）は `curl` だと初期シェルの断片しか見えず、
+  実データが入っていても `0件` のように見えることがある（loop 52 で実際に踏んだ）。
+  疑わしいときは `curl` の結果を信じず、必ず Playwright（`page.goto` →
+  `page.locator(...).count()`）で実ブラウザとして確認し直すこと。
 - **カレンダー系の操作は日付の衝突に注意**。既存の予約データと貸出期間が重なる
   日付を選ぶと「カートに追加」ボタンが `disabled` のままクリックがタイムアウトする。
   近い日付は既存データと被りやすいので、乱数で十分先の未来日を選ぶと安全
@@ -142,7 +156,10 @@ MVP のゴールにすべてチェックが付いたら、次フェーズへ進�
 - **`web/.env` と `web/dev.db` が無い/空の場合がある**（この作業ディレクトリは
   `node_modules` 同様に揮発することがある）。動かない場合はまず
   `npm ci` → `cp .env.example .env` → `npx prisma migrate deploy` →
-  `npm run db:seed` を確認する。
+  `npm run db:seed` を確認する。本番相当（Turso）で検証する場合は `.env` の
+  `DATABASE_URL`/`TURSO_AUTH_TOKEN` を本番用に設定してから同じ手順を行う
+  （`prisma migrate deploy` は `libsql://` を扱えないため、Turso向けの適用は
+  `docs/DEPLOY-GCP.md` の手順に従うこと）。
 - 管理画面（`/admin/**`）は Basic 認証（既定 `admin` / `.env` の `ADMIN_PASSWORD`）で
   保護されている。Playwrightからは `page.goto` の前に
   `context.setHTTPCredentials` 相当（`browser.newContext({ httpCredentials: {...} })`）

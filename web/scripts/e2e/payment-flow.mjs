@@ -13,8 +13,7 @@
 // 参照: .claude/skills/loop-instruction/SKILL.md の「Playwrightでの動作確認」節。
 import { chromium } from "@playwright/test";
 import { randomUUID, randomInt } from "node:crypto";
-import { PrismaClient } from "../../lib/generated/prisma/client.ts";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
+import { prisma } from "../../lib/db.ts";
 
 const BASE = process.env.E2E_BASE_URL ?? "http://localhost:3000";
 const email = `pw-verify-${randomUUID().slice(0, 8)}@example.jp`;
@@ -29,7 +28,6 @@ function log(label) {
 }
 
 async function cleanup() {
-  const prisma = new PrismaClient({ adapter: new PrismaLibSql({ url: "file:./dev.db" }) });
   const user = await prisma.user.findUnique({ where: { email } });
   if (user) {
     await prisma.reservation.deleteMany({ where: { userId: user.id } });
