@@ -1,0 +1,15 @@
+# 改行コードを LF に統一する。
+# core.autocrlf はマシンごとの設定に依存し、エディタ（VSCode等）とシェル（Git Bash等）で
+# 判定がずれて「改行コードだけの差分」が見えることがあるため、リポジトリ側で固定する。
+* text=auto eol=lf
+
+# バイナリ扱いにするもの（改行変換の対象外）
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.db binary
