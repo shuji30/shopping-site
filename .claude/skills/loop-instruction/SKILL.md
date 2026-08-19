@@ -69,6 +69,9 @@ MVP のゴールにすべてチェックが付いたら、次フェーズへ進�
   — 各コミットは「安全に再開できる地点」であるべき。直せないなら履歴に理由を明記して止める。
 - **禁止事項・ゴール・目的を無断で書き換えない**
   — これらは合意の土台。変更が要るときはユーザーに確認してから。
+- **`master` ブランチへ `git push` しない**
+  — `master` は本番相当のブランチで、本番反映は人間が行う運用。開発は
+  `develop` ブランチで行う（詳細は「Git運用」節）。
 
 ---
 
@@ -166,6 +169,25 @@ MVP のゴールにすべてチェックが付いたら、次フェーズへ進�
   （ローカルのHTTPでは問題ない。loop 52で実際に発生）。確実に動くのは
   `page.setExtraHTTPHeaders({ Authorization: "Basic " + Buffer.from("user:pass").toString("base64") })`
   を使う方式（`admin-review-moderation.mjs` 参照）。迷ったらこちらを使う。
+
+---
+
+## Git運用（ブランチ・本番反映）
+
+- **開発（ループの作業）は `develop` ブランチで行う**。各ループのコミットは
+  `develop` に対して積む。ループ開始時は必ず `git branch --show-current` で
+  `develop` にいることを確認する（意図せず別ブランチに切り替わっていた実例が
+  過去にあった。ズレていれば独断で戻さずユーザーに確認する）。
+- **`master` は本番相当のブランチ**。`develop` の内容を `master` に反映
+  （マージ）し、`git push origin master` することで本番を更新する運用とする。
+- **`master` への push は必ず人間が行う。Claude（このスキル）は `master` へ
+  `git push` してはならない**。`develop` の push は問題ない。
+  ローカルで `develop`→`master` へのマージ作業を求められた場合も、
+  最終的な `git push origin master` の実行はユーザーに委ね、
+  自分では実行しない。
+- 実際のCloud Run等へのデプロイ手順自体（`docs/DEPLOY-GCP.md`）はこれとは別軸。
+  「`master`にpushしたら自動デプロイされる」という仕組みは今のところ無く、
+  デプロイは手動の `gcloud builds submit`→`gcloud run deploy` のまま。
 
 ---
 
