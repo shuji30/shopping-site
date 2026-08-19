@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import { processPayment } from "@/lib/payment";
+import { processPayment, isPayable } from "@/lib/payment";
 import { getCurrentUser } from "@/lib/auth";
 
 export interface PayResult {
@@ -41,7 +41,8 @@ export async function payReservation(input: {
   if (r.paymentStatus === "paid") {
     return { ok: true, alreadyPaid: true, paymentStatus: "paid" };
   }
-  if (r.paymentStatus === "refunded") {
+  if (!isPayable(r.paymentStatus)) {
+    // 返金済みなど、未払い以外は決済させない
     return { ok: false, error: "この予約は返金済みのため、お支払いできません。" };
   }
 
@@ -86,7 +87,8 @@ export async function payMyReservation(
   if (r.paymentStatus === "paid") {
     return { ok: true, alreadyPaid: true, paymentStatus: "paid" };
   }
-  if (r.paymentStatus === "refunded") {
+  if (!isPayable(r.paymentStatus)) {
+    // 返金済みなど、未払い以外は決済させない
     return { ok: false, error: "この予約は返金済みのため、お支払いできません。" };
   }
   if (r.status === "cancelled") {

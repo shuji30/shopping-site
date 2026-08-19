@@ -1,8 +1,10 @@
 import { describe, it, expect } from "vitest";
 import {
+  isPayable,
   isPaymentStatus,
   paymentStatusLabel,
   paymentStatusLabels,
+  paymentStatuses,
   processPayment,
 } from "@/lib/payment";
 
@@ -34,6 +36,26 @@ describe("paymentStatusLabel", () => {
     for (const key of Object.keys(paymentStatusLabels)) {
       expect(paymentStatusLabels[key as keyof typeof paymentStatusLabels]).toBeTruthy();
     }
+  });
+});
+
+describe("paymentStatuses", () => {
+  it("labels のキーと過不足なく一致する", () => {
+    expect([...paymentStatuses].sort()).toEqual(
+      Object.keys(paymentStatusLabels).sort(),
+    );
+  });
+});
+
+describe("isPayable", () => {
+  it("未払いのときだけ支払い導線を出す", () => {
+    expect(isPayable("unpaid")).toBe(true);
+    expect(isPayable("paid")).toBe(false);
+    expect(isPayable("refunded")).toBe(false);
+  });
+
+  it("未知の値は支払い不可として扱う", () => {
+    expect(isPayable("foo")).toBe(false);
   });
 });
 

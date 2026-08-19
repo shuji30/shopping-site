@@ -3,9 +3,11 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updatePaymentStatus } from "@/lib/actions/admin-payment";
-import { paymentStatusLabels, type PaymentStatus } from "@/lib/payment";
-
-const options: PaymentStatus[] = ["unpaid", "paid", "refunded"];
+import {
+  paymentStatusLabels,
+  paymentStatuses,
+  type PaymentStatus,
+} from "@/lib/payment";
 
 /** 管理画面：入金ステータスの変更操作 */
 export function PaymentControl({
@@ -34,7 +36,7 @@ export function PaymentControl({
   return (
     <div>
       <div className="flex flex-wrap gap-2">
-        {options.map((s) => {
+        {paymentStatuses.map((s) => {
           const active = s === current;
           return (
             <button

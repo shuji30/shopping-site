@@ -115,6 +115,9 @@
 - [x] Playwrightでの動作確認基盤（`web/scripts/e2e/`、SKILL.mdに手順を明記） (loop 49)
 - [x] Playwright e2e: マイページからのオンライン決済フロー（`scripts/e2e/payment-flow.mjs`） (loop 50)
 - [x] Playwright e2e: 管理画面のレビュー削除（モデレーション）（`scripts/e2e/admin-review-moderation.mjs`） (loop 51)
+- [x] 入金ステータス判定の純粋関数化 — `paymentStatuses`（選択肢の唯一の定義）と
+      `isPayable`（未払いのときだけ支払い導線を出す）に切り出し、UI・サーバー
+      アクションの分岐を統一。単体テスト3件追加（53→56件） (loop 65)
 - [x] e2e 実行基盤の安定化 — 環境同梱Chromiumを使う `scripts/e2e/browser.mjs`
       （`launchChromium()`）を追加して既存6本を移行、更新完了待ちの競合を修正、
       loop 60 の仕様変更で壊れていた signup 手順を修正。e2e 6本すべてPASS (loop 64)

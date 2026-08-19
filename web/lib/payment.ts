@@ -11,6 +11,9 @@ export type PaymentStatus =
   | "paid" // 支払い済み
   | "refunded"; // 返金済み
 
+/** 管理画面などで選択肢として並べる順序 */
+export const paymentStatuses: PaymentStatus[] = ["unpaid", "paid", "refunded"];
+
 export const paymentStatusLabels: Record<PaymentStatus, string> = {
   unpaid: "未払い",
   paid: "支払い済み",
@@ -25,11 +28,20 @@ export const paymentStatusClasses: Record<PaymentStatus, string> = {
 };
 
 export function isPaymentStatus(v: string): v is PaymentStatus {
-  return v === "unpaid" || v === "paid" || v === "refunded";
+  return (paymentStatuses as string[]).includes(v);
 }
 
 export function paymentStatusLabel(v: string): string {
   return isPaymentStatus(v) ? paymentStatusLabels[v] : v;
+}
+
+/**
+ * お客様側で「今すぐ支払う」導線を出してよい状態か。未払いのときだけ true。
+ * 「paid ではない」ではなく「unpaid である」で判定することで、あとから
+ * ステータスが増えても支払いボタンが勝手に復活しないようにする。
+ */
+export function isPayable(v: string): boolean {
+  return v === "unpaid";
 }
 
 export interface PaymentRequest {

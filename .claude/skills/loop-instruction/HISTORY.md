@@ -5,6 +5,35 @@
 
 ---
 
+## loop 65 — 入金ステータス判定を純粋関数へ切り出し（2026-08-19）
+
+### 経緯
+- loop 62（develop側の実装）は正しく動いていたが、支払い導線の条件が
+  `paymentStatus === "unpaid"` / `=== "refunded"` と各所に直書きされており、
+  ステータスが増えたときに支払いボタンが勝手に復活しうる形だった。
+  破棄した重複ブランチから、この部分の整理とテストだけを取り込んだ。
+
+### やったこと
+- `lib/payment.ts`: 選択肢の唯一の定義 `paymentStatuses` と、支払い導線を出して
+  よいかを表す `isPayable`（未払いのときだけ true）を追加。`isPaymentStatus` は
+  `paymentStatuses` から導出する形に変更（値の追加漏れが起きないように）。
+- `components/PaymentControl.tsx`: ローカルの `options` 配列を `paymentStatuses` に統一。
+- `app/(site)/mypage/page.tsx`・`lib/actions/payment.ts`: 分岐を `isPayable` に置換。
+- `tests/payment.test.ts`: `paymentStatuses` と labels のキー一致、`isPayable` の
+  テストを追加（53→56件）。
+
+### 結果
+- ESLint 0・vitest 56件パス・`next build` 成功。
+- e2e `admin-payment-status.mjs` / `payment-flow.mjs` ともに **PASS**（挙動は不変）。
+
+### 気づき・次への申し送り
+- 「paid ではない」ではなく「unpaid である」で判定するのが要点。ステータスを
+  追加するときは `paymentStatuses` に足すだけで選択肢・型ガードの両方に効く。
+- 残タスク: 「商品一覧のページネーション」「予約入力バリデーションの純粋関数化＋テスト」
+  「Capacitor の実機ビルド（要 macOS/Android Studio）」。
+
+---
+
 ## loop 64 — e2e 実行基盤の安定化（launchChromium・待機競合・古い手順）（2026-08-19）
 
 ### 経緯
