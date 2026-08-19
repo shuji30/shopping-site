@@ -5,6 +5,51 @@
 
 ---
 
+## loop 53 — GCP実デプロイ完了（Cloud Run + Turso）（2026-08-19）
+
+### やったこと
+- `webprog36` プロジェクトの課金を有効化（唯一のOPENな請求先アカウントをユーザー確認の上で紐付け）。
+- 必要API有効化（Cloud Run / Artifact Registry / Cloud Build / Secret Manager）。
+- Artifact Registryリポジトリ `miyabi`（asia-northeast1）を作成。
+- `gcloud builds submit` でコンテナをビルド＆push（1回目は`PERMISSION_DENIED`で失敗。
+  課金/API有効化直後のIAM↔GCSレガシーACL反映待ちと見られ、リトライで成功）。
+- 管理画面パスワードをランダム生成（`openssl rand`）してSecret Manager
+  （`miyabi-admin-pass`）に登録。Tursoトークンも同様に`miyabi-turso-token`へ登録。
+- `gcloud run deploy` でCloud Runにデプロイ。1回目はCloud Runのデフォルトサービス
+  アカウントにSecret Manager閲覧権限が無く失敗 →
+  `secrets add-iam-policy-binding`で`roles/secretmanager.secretAccessor`を
+  付与して解決。
+- 本番URL（`https://miyabi-294448459831.asia-northeast1.run.app`）が発行され、稼働確認。
+
+### 検証
+- curlでのステータスコード確認（`/`・`/kimonos`・Basic認証あり/なしの`/admin`）。
+- **Playwrightで実ブラウザとして本番URLを確認**（curl依存を避ける教訓を即実践）：
+  `/kimonos`で10件の商品が正しく表示されることを確認。
+- `scripts/e2e/`の3本すべてを `E2E_BASE_URL=<本番URL>` で実行し、**すべてPASS**：
+  会員登録・チェックアウト自動入力・オンライン決済・管理画面のレビュー削除。
+- この過程で新たな実バグを発見・修正：`admin-review-moderation.mjs`が使っていた
+  `browser.newContext({ httpCredentials })` が、**本番のHTTPS環境に対しては
+  応答が返らずタイムアウトする**（ローカルのHTTPでは問題なし）。
+  `page.setExtraHTTPHeaders({ Authorization: "Basic ..." })` 方式に変更して解決。
+  ローカル・本番の両方で再確認しPASS。
+- ESLint 0・vitest 53件パス。
+
+### 結果
+- **本番公開完了**。サンプルサイトとして実際にインターネットからアクセス可能。
+- 本番URL・管理画面パスワードはユーザーに別途チャットで共有済み（HISTORYには残さない）。
+
+### 気づき・次への申し送り
+- Cloud Runはデフォルトでゼロスケールのため、アクセスが無ければ課金はほぼ発生しない
+  （Tursoも無料枠）。運用コストの心配は基本的に不要。
+- アプリの更新は「`gcloud builds submit`（手順4）→`gcloud run deploy`（手順5）」を
+  再実行するだけ（docs/DEPLOY-GCP.md 手順6）。スキーマ変更時は
+  `turso db shell miyabi < 新しいmigration.sql` を追加で実行する。
+- ROADMAPの残タスクはCapacitorの実機ビルドのみ（要 macOS+Xcode / Android Studio、
+  この環境では引き続き不可）。GCPデプロイは今回で解消したので、
+  「環境の制約」として残る既知の未完了タスクはこれで最後の1件になった。
+
+---
+
 ## loop 52 — GCP実デプロイ着手：TursoでDBを無料化＋大きな学び（2026-08-19）
 
 ### 経緯

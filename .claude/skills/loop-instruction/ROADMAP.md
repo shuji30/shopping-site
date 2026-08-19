@@ -72,10 +72,12 @@
 - [x] DB を Turso（libSQL無料枠）にも対応 — コード変更なしで本番運用可能に。
       `lib/db.ts`にauthToken対応、seed/e2eスクリプトを`lib/db.ts`経由に統一、
       docs/DEPLOY-GCP.mdにTurso手順を追加 (loop 52)
-- [~] 実デプロイ — **この環境でも `gcloud`(shuji30@gmail.com認証済み)と WSL経由のTurso CLIが
-      実際に使えることが判明**（従来の「環境では不可」という記述は誤りだった）。
-      対象プロジェクト: `webprog36`。DB: Turso（`miyabi`、マイグレーション適用・シード済み、
-      Playwright e2e 3本すべてPASS）。次はコンテナビルド〜Cloud Runデプロイ本体 (loop 52〜)
+- [x] 実デプロイ — **完了**。`gcloud`(shuji30@gmail.com認証済み)とWSL経由のTurso CLIで
+      実際にデプロイできた（従来の「環境では不可」という記述は誤りだった）。
+      プロジェクト: `webprog36`（課金有効化・API有効化・Artifact Registry作成済み）。
+      DB: Turso（`miyabi`）。Cloud Runサービス `miyabi`（asia-northeast1）にデプロイ済み。
+      本番URL・管理画面パスワードはユーザーに別途共有。Playwright e2e 3本
+      （閲覧・チェックアウト自動入力・決済・レビュー削除）すべて本番URLでPASS (loop 53)
 
 ## 通知・その他機能
 

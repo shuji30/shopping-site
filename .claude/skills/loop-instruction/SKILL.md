@@ -161,9 +161,11 @@ MVP のゴールにすべてチェックが付いたら、次フェーズへ進�
   （`prisma migrate deploy` は `libsql://` を扱えないため、Turso向けの適用は
   `docs/DEPLOY-GCP.md` の手順に従うこと）。
 - 管理画面（`/admin/**`）は Basic 認証（既定 `admin` / `.env` の `ADMIN_PASSWORD`）で
-  保護されている。Playwrightからは `page.goto` の前に
-  `context.setHTTPCredentials` 相当（`browser.newContext({ httpCredentials: {...} })`）
-  を使うか、`fetch`/`curl` で先に疎通確認する。
+  保護されている。**`browser.newContext({ httpCredentials: {...} })` は本番の
+  HTTPS環境（Cloud Run等）に対しては応答が返らずタイムアウトすることがあった**
+  （ローカルのHTTPでは問題ない。loop 52で実際に発生）。確実に動くのは
+  `page.setExtraHTTPHeaders({ Authorization: "Basic " + Buffer.from("user:pass").toString("base64") })`
+  を使う方式（`admin-review-moderation.mjs` 参照）。迷ったらこちらを使う。
 
 ---
 

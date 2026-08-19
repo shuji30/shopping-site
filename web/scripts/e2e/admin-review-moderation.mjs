@@ -50,10 +50,14 @@ try {
   console.log("review visible on detail page:", onDetail === 1);
 
   log("admin: review appears in moderation list");
-  const adminContext = await browser.newContext({
-    httpCredentials: { username: ADMIN_USER, password: ADMIN_PASSWORD },
-  });
+  // Playwright の browser.newContext({ httpCredentials }) は、本番のHTTPS環境
+  // （Cloud Run等）に対しては応答が返らずタイムアウトすることがあった
+  // （ローカルのHTTPでは問題ない）。Authorizationヘッダーを直接付与する方式なら
+  // どちらでも確実に動く。
+  const adminContext = await browser.newContext();
   const adminPage = await adminContext.newPage();
+  const basicAuth = Buffer.from(`${ADMIN_USER}:${ADMIN_PASSWORD}`).toString("base64");
+  await adminPage.setExtraHTTPHeaders({ Authorization: `Basic ${basicAuth}` });
   await adminPage.goto(`${BASE}/admin/reviews`);
   const onAdminBefore = await adminPage.locator(`text=${comment}`).count();
   console.log("review visible in admin list:", onAdminBefore === 1);
