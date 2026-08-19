@@ -5,6 +5,29 @@
 
 ---
 
+## loop 60 — 会員登録のパスワード確認2回入力（2026-08-19）
+
+### 経緯
+- 「ループをつづけて」の指示。ROADMAPの最上位（上から順）の未着手タスクである
+  「会員登録時にパスワードを2回入力させる」に着手。
+
+### やったこと
+- `components/SignupForm.tsx`: 「パスワード（確認）」フィールドを追加。
+  送信前にクライアント側で一致チェックし、不一致なら送信せずエラー表示。
+- `lib/actions/auth.ts`: `register()` に `passwordConfirm` を追加し、
+  サーバー側でも不一致を検証（クライアント側チェックのみに依存しない防御）。
+- `scripts/e2e/signup-password-confirm.mjs`: 不一致→エラー表示・未登録、
+  一致→登録成功・マイページ遷移、の両方をPlaywrightで確認するスクリプトを追加。
+
+### 結果
+- ESLint 0・vitest 53件パス・`next build`成功。
+- `npx tsx scripts/e2e/signup-password-confirm.mjs` 実行で **PASS**。
+
+### 気づき・次への申し送り
+- 次はROADMAP最上位の残タスク「パスワードリマインダー（再設定機能）」。
+
+---
+
 ## loop 59 — masterへのpushルールを緩和（2026-08-19）
 
 ### 経緯

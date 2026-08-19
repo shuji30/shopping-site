@@ -10,15 +10,20 @@ export function SignupForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (password !== passwordConfirm) {
+      setError("パスワードが一致しません。");
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
-      const res = await register({ name, email, password });
+      const res = await register({ name, email, password, passwordConfirm });
       if (!res.ok) {
         setError(res.error ?? "登録に失敗しました。");
         return;
@@ -73,6 +78,21 @@ export function SignupForm() {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          className={fieldClass}
+        />
+      </div>
+      <div>
+        <label
+          htmlFor="password-confirm"
+          className="text-sm font-medium text-sumi/80"
+        >
+          パスワード（確認）
+        </label>
+        <input
+          id="password-confirm"
+          type="password"
+          value={passwordConfirm}
+          onChange={(e) => setPasswordConfirm(e.target.value)}
           className={fieldClass}
         />
       </div>

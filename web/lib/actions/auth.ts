@@ -21,10 +21,12 @@ export async function register(input: {
   email: string;
   name: string;
   password: string;
+  passwordConfirm: string;
 }): Promise<AuthResult> {
   const email = input.email?.trim().toLowerCase();
   const name = input.name?.trim();
   const password = input.password ?? "";
+  const passwordConfirm = input.passwordConfirm ?? "";
 
   if (!name || !email) {
     return { ok: false, error: "お名前とメールアドレスを入力してください。" };
@@ -34,6 +36,9 @@ export async function register(input: {
   }
   if (password.length < 8) {
     return { ok: false, error: "パスワードは8文字以上で設定してください。" };
+  }
+  if (password !== passwordConfirm) {
+    return { ok: false, error: "パスワードが一致しません。" };
   }
 
   const existing = await prisma.user.findUnique({ where: { email } });
