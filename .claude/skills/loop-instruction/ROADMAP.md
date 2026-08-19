@@ -66,6 +66,8 @@
   - [x] 管理画面のアクセス保護（Basic認証 middleware） (loop 22)
   - [x] 決済状況の可視化（一覧に入金列＋ダッシュボードに入金件数/入金額タイル） (loop 34)
   - [x] レビュー管理（一覧・削除によるモデレーション） (loop 47)
+  - [ ] 入金ステータスの手動更新（未入金/入金済み/返金済みを管理画面から切替。
+        `claude/loop-instruction-skill-continue-ruwp7i` の loop 37 相当を現行実装向けに作り直す）
 
 ## デプロイ・インフラ
 
@@ -86,6 +88,9 @@
 - [x] 予約確認メールのダミー送信（実送信せず EmailLog に記録／管理の予約詳細で全文表示） (loop 40)
 - [x] 商品レビュー（星評価＋コメント投稿、平均評価サマリ、詳細ページで一覧表示） (loop 41)
 - [x] トップページの充実（選ばれる理由・ご利用の流れ・CTAセクションを追加） (loop 42)
+- [ ] 特定商取引法に基づく表記ページ（/legal）を追加（事業者情報・販売条件・返品/
+      キャンセル等。実運用時は値の差し替えのみで対応できるようデータと表示を分離する。
+      `claude/loop-instruction-skill-continue-ruwp7i` の loop 34 相当を現行実装向けに作り直す）
 
 ## UX 改善
 
@@ -95,6 +100,9 @@
   - [x] ヘッダーのお気に入り導線（件数バッジ）＋お気に入り一覧ページ（/favorites） (loop 39)
 - [x] トップページに最新レビューの抜粋（「お客様の声」）を表示（loop 42 の申し送り事項） (loop 46)
 - [x] 予約申込フォームの自動入力（ログイン中は会員情報＋直近の予約内容で初期値を埋める） (loop 48)
+- [ ] 商品一覧のページネーション（件数が増えた場合に備えて。8件/頁程度を想定。
+      `claude/loop-instruction-skill-continue-ruwp7i` の loop 35 相当を現行の
+      `kimono-filter.ts`/検索・並び替えと統合する形で作り直す）
 
 ## 品質・整備
 
@@ -103,6 +111,9 @@
 - [x] Playwrightでの動作確認基盤（`web/scripts/e2e/`、SKILL.mdに手順を明記） (loop 49)
 - [x] Playwright e2e: マイページからのオンライン決済フロー（`scripts/e2e/payment-flow.mjs`） (loop 50)
 - [x] Playwright e2e: 管理画面のレビュー削除（モデレーション）（`scripts/e2e/admin-review-moderation.mjs`） (loop 51)
+- [ ] 予約入力バリデーションの純粋関数化＋テスト（`CheckoutView.tsx`内のインライン検証を
+      `lib/`配下の純粋関数に切り出す。`claude/loop-instruction-skill-continue-ruwp7i` の
+      loop 38 相当を現行実装向けに作り直す）
 
 ## 保留・要確認
 
