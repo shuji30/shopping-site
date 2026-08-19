@@ -5,6 +5,31 @@
 
 ---
 
+## loop 58 — 古いMonaca/Cordova残骸を削除（2026-08-19）
+
+### 経緯
+- ユーザーから「古いMonaca残骸（config.xml・platforms/・www/・.monaca/等）は
+  整理したい」との依頼（loop 57と同じメッセージでまとめて依頼された別件）。
+
+### やったこと
+- リポジトリ直下の `config.xml`・`platforms/`・`www/`・`res/`・`.monaca/` を削除
+  （合計179ファイル。現行の Next.js プロジェクト（`web/`）とは無関係な、
+  Monaca/Cordovaの初期テンプレートの残骸だった）。
+- 事前に他ファイルからの参照が無いか確認：`web/docs/CAPACITOR.md` 等が
+  `www/` に触れている箇所は `web/native/www/`（Capacitor用に loop43 で新設した
+  別物）であり、削除対象の root `www/` とは無関係と確認した。
+- root の `LICENSE`・`.gitignore` はそのまま残した（現行プロジェクトと無関係とは
+  言えないため）。
+
+### 結果
+- ESLint 0・vitest 53件パス（`web/`配下は無影響のため想定通り）。
+
+### 気づき・次への申し送り
+- リポジトリ直下がすっきりし、`.claude/`・`.github/`・`web/`・`LICENSE`・
+  `.gitattributes`・`.gitignore` のみになった。
+
+---
+
 ## loop 57 — 管理画面フッターにバージョン表示を追加（2026-08-19）
 
 ### 経緯

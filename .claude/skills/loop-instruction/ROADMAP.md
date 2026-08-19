@@ -117,6 +117,8 @@
 - [x] Playwrightでの動作確認基盤（`web/scripts/e2e/`、SKILL.mdに手順を明記） (loop 49)
 - [x] Playwright e2e: マイページからのオンライン決済フロー（`scripts/e2e/payment-flow.mjs`） (loop 50)
 - [x] Playwright e2e: 管理画面のレビュー削除（モデレーション）（`scripts/e2e/admin-review-moderation.mjs`） (loop 51)
+- [x] リポジトリ直下の古いMonaca/Cordova残骸を削除（`config.xml`・`platforms/`・
+      `www/`・`res/`・`.monaca/`。現行プロジェクト（`web/`）とは無関係だった） (loop 58)
 - [ ] 予約入力バリデーションの純粋関数化＋テスト（`CheckoutView.tsx`内のインライン検証を
       `lib/`配下の純粋関数に切り出す。`claude/loop-instruction-skill-continue-ruwp7i` の
       loop 38 相当を現行実装向けに作り直す）
