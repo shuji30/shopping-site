@@ -56,3 +56,24 @@ export function reservationConfirmationEmail(
 
   return { subject, body };
 }
+
+/** パスワード再設定メール */
+export function passwordResetEmail(input: {
+  name: string;
+  resetUrl: string;
+}): MailContent {
+  const subject = "【きものレンタル 雅】パスワードの再設定について";
+  const body = [
+    `${input.name} 様`,
+    "",
+    "パスワード再設定のリクエストを受け付けました。",
+    "以下のリンクから新しいパスワードを設定してください（有効期限は1時間です）。",
+    "",
+    input.resetUrl,
+    "",
+    "心当たりが無い場合は、このメールを破棄してください。パスワードは変更されません。",
+    "",
+    "※ 本メールはサンプルサイトの自動送信です（実際の送信は行われません）。",
+  ].join("\n");
+  return { subject, body };
+}

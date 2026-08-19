@@ -47,6 +47,35 @@ export async function destroySession(): Promise<void> {
   }
 }
 
+const RESET_TOKEN_HOURS = 1;
+
+/**
+ * パスワード再設定トークンを発行する（有効期限1時間）。
+ * 同一ユーザーの既存トークンは全て無効化してから発行する（複数回リクエストされても
+ * 最新のリンクだけが有効になるようにするため）。
+ */
+export async function createPasswordResetToken(userId: string): Promise<string> {
+  await prisma.passwordResetToken.deleteMany({ where: { userId } });
+  const token = randomBytes(32).toString("hex");
+  const expiresAt = new Date(Date.now() + RESET_TOKEN_HOURS * 60 * 60 * 1000);
+  await prisma.passwordResetToken.create({ data: { token, userId, expiresAt } });
+  return token;
+}
+
+/**
+ * パスワード再設定トークンを検証する。有効なら対象の userId を返し、
+ * トークンは使い捨てのためその場で削除する。無効・期限切れなら null。
+ */
+export async function consumePasswordResetToken(
+  token: string,
+): Promise<string | null> {
+  const record = await prisma.passwordResetToken.findUnique({ where: { token } });
+  if (!record) return null;
+  await prisma.passwordResetToken.delete({ where: { token } });
+  if (record.expiresAt < new Date()) return null;
+  return record.userId;
+}
+
 /** ログイン中のユーザーを返す（未ログインは null）。期限切れセッションは無効。 */
 export async function getCurrentUser() {
   const store = await cookies();

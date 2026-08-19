@@ -5,6 +5,55 @@
 
 ---
 
+## loop 61 — パスワードリマインダー（再設定機能）を追加（2026-08-19）
+
+### 経緯
+- 「ループをつづけて」の指示で継続。ROADMAP最上位の残タスク
+  「パスワードリマインダー」に着手（これで「ユーザー認証・マイページ」
+  グループが全て完了）。
+
+### やったこと
+- `prisma/schema.prisma`: `PasswordResetToken`（token/userId/expiresAt）を追加。
+  `DATABASE_URL="file:./dev.db"` を一時的に指定して`prisma migrate dev`で
+  マイグレーションファイルを生成し（.envのTurso設定は変更せず）、
+  `turso db shell miyabi` で本番DBにも直接適用。`npx prisma generate`で
+  クライアントを再生成（生成し忘れて一度buildの型チェックで失敗した）。
+- `lib/auth.ts`: `createPasswordResetToken`（1時間有効・発行時に同ユーザーの
+  既存トークンを全削除）、`consumePasswordResetToken`（検証と同時に使い捨てで削除）。
+- `lib/mail-templates.ts`: `passwordResetEmail`（既存のモック送信の仕組みに乗せる）。
+- `lib/actions/auth.ts`: `requestPasswordReset`（メール存在有無を問わず常にok:true、
+  存在する場合のみ実際に送信して推測されないように）、`resetPassword`
+  （トークン検証→パスワード更新→自動ログイン）。
+- `components/ForgotPasswordForm.tsx`・`ResetPasswordForm.tsx`と
+  `/forgot-password`・`/reset-password`ページを新規作成。`LoginForm`に
+  「パスワードをお忘れの方はこちら」リンクを追加。
+- `scripts/e2e/password-reset.mjs`: 未登録メールでの汎用メッセージ・
+  トークン発行・再設定・旧パスワード失効・新パスワードでのログイン・
+  トークン再利用不可、の5点をPlaywrightで確認するスクリプトを追加。
+
+### つまずいた点
+- `page.click("button[type=submit]")` が、ログイン中はヘッダーの
+  「ログアウト」ボタン（同じく`type=submit`）を誤ってクリックしてしまい、
+  意図せずログアウト＆ホームに遷移する不具合に遭遇。原因特定にやや時間が
+  かかった。**恒久対策**：SKILL.mdに追記し、全てのボタンクリックを
+  `button:has-text(...)`のテキスト指定に統一。
+- 最初のテスト実行で `ok` 判定ロジックのバグ（最後の操作後の`page.url()`を
+  再利用していたため、途中の「新パスワードでログイン成功」の判定が
+  正しく反映されない）に気づき、該当ステップの直後に真偽値を変数へ
+  キャプチャする形に修正。
+
+### 結果
+- ESLint 0・vitest 53件パス・`next build`成功（`/forgot-password`・
+  `/reset-password`ルート追加）。
+- `npx tsx scripts/e2e/password-reset.mjs` 実行で **PASS**（5項目すべて確認）。
+
+### 気づき・次への申し送り
+- 「ユーザー認証・マイページ」グループが全て完了。次はROADMAP上から
+  「入金ステータスの手動更新」「/legal」「商品一覧のページネーション」
+  「予約入力バリデーションの純粋関数化」のいずれか。
+
+---
+
 ## loop 60 — 会員登録のパスワード確認2回入力（2026-08-19）
 
 ### 経緯

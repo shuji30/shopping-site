@@ -60,6 +60,7 @@ model User {
   createdAt    DateTime      @default(now())
   sessions     Session[]
   reservations Reservation[]
+  resetTokens  PasswordResetToken[]
 }
 
 /// ログインセッション（トークンを httpOnly Cookie に保存し照合）
@@ -69,6 +70,17 @@ model Session {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   createdAt DateTime @default(now())
+}
+
+/// パスワード再設定トークン（メールリンク経由・有効期限付き・使い捨て）
+model PasswordResetToken {
+  token     String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 /// 予約申込の明細（1点のレンタル）

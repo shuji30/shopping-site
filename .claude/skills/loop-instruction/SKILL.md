@@ -170,6 +170,12 @@ MVP のゴールにすべてチェックが付いたら、次フェーズへ進�
   （ローカルのHTTPでは問題ない。loop 52で実際に発生）。確実に動くのは
   `page.setExtraHTTPHeaders({ Authorization: "Basic " + Buffer.from("user:pass").toString("base64") })`
   を使う方式（`admin-review-moderation.mjs` 参照）。迷ったらこちらを使う。
+- **ログイン中はヘッダーにも `<button type="submit">ログアウト</button>` が存在する**。
+  `page.click("button[type=submit]")` のような曖昧なセレクタだと、目的のフォームでは
+  なくヘッダーのログアウトボタンを誤ってクリックし、意図せずログアウト＆ホームへ
+  遷移してしまうことがある（loop 61で実際に発生、原因特定に時間がかかった）。
+  ログイン状態が絡むフローを検証するときは、必ず対象ボタンのテキストで
+  `button:has-text('登録する')` のように特定すること。
 
 ---
 
@@ -192,6 +198,11 @@ MVP のゴールにすべてチェックが付いたら、次フェーズへ進�
   push・PRで lint/test/build（CI）、`master` への push（通常は人間、指示があればClaude）で
   Cloud Runへの自動デプロイ（CD）が走る。**つまり `master` への push は
   即座に本番へ反映される**ということを踏まえて、マージ前に内容を確認すること。
+- **CI/CDの実行結果確認は `curl` で未認証のGitHub APIを叩くと、すぐレート制限
+  （60回/時）に達する**（loop 60で実際に発生）。`gh` CLI
+  （`C:\Program Files\GitHub CLI\gh.exe`、`shuji30`で認証済み）経由なら
+  上限が大きく安定する：
+  `"$GH" run list --repo shuji30/shopping-site --branch <branch> --limit 3`。
 
 ---
 
