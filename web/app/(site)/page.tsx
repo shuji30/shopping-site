@@ -1,16 +1,32 @@
 import Link from "next/link";
-import { getFeaturedKimonos } from "@/lib/kimono-repository";
-import { categories } from "@/lib/categories";
+import { getAllKimonos, getFeaturedKimonos } from "@/lib/kimono-repository";
 import { ProductCard } from "@/components/ProductCard";
 import { getLatestReviews } from "@/lib/review-repository";
 import { StarRating } from "@/components/StarRating";
 import { formatJP } from "@/lib/date";
+import {
+  fillCatalogNote,
+  formatDaysRange,
+  formatPriceRange,
+  summarizeCatalog,
+} from "@/lib/catalog-summary";
+import {
+  assurances,
+  closingCta,
+  features,
+  hero,
+  scenes,
+  steps,
+} from "@/data/home-content";
 
 export default async function Home() {
-  const [featured, latestReviews] = await Promise.all([
+  const [featured, latestReviews, all] = await Promise.all([
     getFeaturedKimonos(),
     getLatestReviews(3),
+    getAllKimonos(),
   ]);
+  // 金額・レンタル日数は実データから出す（文言に埋め込むと商品追加で嘘になるため）
+  const summary = summarizeCatalog(all);
 
   return (
     <>
@@ -38,36 +54,88 @@ export default async function Home() {
           <rect width="100%" height="100%" fill="url(#hero-wave)" />
         </svg>
         <div className="relative mx-auto max-w-6xl px-4 py-24 sm:py-32">
-          <p className="text-sm tracking-[0.3em] text-kin">KIMONO RENTAL 雅</p>
-          <h1 className="mt-4 font-serif text-4xl leading-tight sm:text-5xl">
-            晴れの日を、
+          <p className="text-sm tracking-[0.3em] text-kin">{hero.eyebrow}</p>
+          {/* スマホでは text-4xl だと「美しい一枚とともに。」が3行に折れるため1段落とす */}
+          <h1 className="mt-4 font-serif text-3xl leading-tight sm:text-5xl">
+            {hero.title[0]}
             <br />
-            美しい一枚とともに。
+            {hero.title[1]}
           </h1>
           <p className="mt-6 max-w-md leading-relaxed text-washi/80">
-            振袖・訪問着・卒業袴・浴衣を、ネットで手軽にレンタル。
-            サイズや柄からお気に入りの一枚をお選びいただけます。
+            {hero.lead}
           </p>
-          <Link
-            href="/kimonos"
-            className="mt-8 inline-block rounded-full bg-kin px-8 py-3 text-sm font-medium text-sumi transition hover:bg-kin/90"
-          >
-            商品を見る
-          </Link>
+
+          {/* 料金とレンタル日数を最初の画面で見せる（申込前の不安を減らす） */}
+          {summary && (
+            <p className="mt-6 text-sm text-washi/90">
+              レンタル料{" "}
+              <span className="font-semibold text-kin">
+                {formatPriceRange(summary.minPrice, summary.maxPrice)}
+              </span>
+              <span className="mx-2 text-washi/40">|</span>
+              ご利用{" "}
+              <span className="font-semibold text-kin">
+                {formatDaysRange(summary.minDays, summary.maxDays)}
+              </span>
+              <span className="mx-2 text-washi/40">|</span>
+              往復送料込み（サンプル）
+            </p>
+          )}
+
+          {/* スマホでは縦積み＋全幅にして押しやすくする */}
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Link
+              href={hero.primaryCta.href}
+              className="rounded-full bg-kin px-8 py-3 text-center text-sm font-medium text-sumi transition hover:bg-kin/90"
+            >
+              {hero.primaryCta.label}
+            </Link>
+            <Link
+              href={hero.secondaryCta.href}
+              className="rounded-full border border-washi/40 px-8 py-3 text-center text-sm font-medium text-washi transition hover:border-washi hover:bg-washi/10"
+            >
+              {hero.secondaryCta.label}
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* カテゴリ */}
+      {/* 安心材料（ヒーロー直下） */}
+      <section className="border-b border-kin/20 bg-white/50">
+        <dl className="mx-auto grid max-w-6xl gap-4 px-4 py-6 sm:grid-cols-3">
+          {assurances.map((a) => (
+            <div key={a.label} className="text-sm">
+              <dt className="text-xs font-medium tracking-wide text-kon">
+                {a.label}
+              </dt>
+              <dd className="mt-1 leading-relaxed text-sumi/70">{a.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      {/* シーンから探す（旧「カテゴリから探す」。利用シーンを主語にして選びやすくする） */}
       <section className="mx-auto max-w-6xl px-4 py-16">
-        <h2 className="font-serif text-2xl text-kon">カテゴリから探す</h2>
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {categories.map((c) => (
+        <h2 className="font-serif text-2xl text-kon">シーンから探す</h2>
+        <p className="mt-2 text-sm text-sumi/60">
+          お使いになる場面から、ふさわしい着物をお選びいただけます。
+        </p>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {scenes.map((s) => (
             <Link
-              key={c.id}
-              href={`/kimonos?category=${c.id}`}
-              className="rounded-lg border border-kin/20 bg-white/60 px-4 py-6 text-center transition hover:border-kin hover:shadow-sm"
+              key={s.category}
+              href={`/kimonos?category=${s.category}`}
+              className="rounded-lg border border-kin/20 bg-white/60 p-5 transition hover:border-kin hover:shadow-sm"
             >
-              <span className="font-serif text-lg text-sumi">{c.label}</span>
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="font-serif text-lg text-sumi">{s.scene}</span>
+                <span className="shrink-0 rounded-full bg-kon/10 px-2.5 py-0.5 text-xs text-kon">
+                  {s.categoryLabel}
+                </span>
+              </div>
+              <p className="mt-2 text-sm leading-relaxed text-sumi/70">
+                {s.note}
+              </p>
             </Link>
           ))}
         </div>
@@ -114,7 +182,32 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* お客様の声 */}
+      {/* ご利用の流れ（ヒーローの副CTAのリンク先） */}
+      <section id="flow" className="scroll-mt-16 bg-washi-dark/50">
+        <div className="mx-auto max-w-6xl px-4 py-16">
+          <h2 className="text-center font-serif text-2xl text-kon">
+            ご利用の流れ
+          </h2>
+          <ol className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {steps.map((s, i) => (
+              <li
+                key={s.title}
+                className="relative rounded-lg border border-kin/20 bg-white/70 p-6"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-kon font-serif text-sm text-washi">
+                  {i + 1}
+                </span>
+                <h3 className="mt-4 font-serif text-lg text-kon">{s.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-sumi/70">
+                  {s.body}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* お客様の声（申し込みを促す直前に置く） */}
       {latestReviews.length > 0 && (
         <section className="mx-auto max-w-6xl px-4 py-16">
           <h2 className="text-center font-serif text-2xl text-kon">
@@ -145,72 +238,24 @@ export default async function Home() {
         </section>
       )}
 
-      {/* ご利用の流れ */}
-      <section className="bg-washi-dark/50">
-        <div className="mx-auto max-w-6xl px-4 py-16">
-          <h2 className="text-center font-serif text-2xl text-kon">
-            ご利用の流れ
-          </h2>
-          <ol className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {steps.map((s, i) => (
-              <li
-                key={s.title}
-                className="relative rounded-lg border border-kin/20 bg-white/70 p-6"
-              >
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-kon font-serif text-sm text-washi">
-                  {i + 1}
-                </span>
-                <h3 className="mt-4 font-serif text-lg text-kon">{s.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-sumi/70">
-                  {s.body}
-                </p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
       {/* CTA */}
       <section className="mx-auto max-w-6xl px-4 py-20 text-center">
-        <h2 className="font-serif text-3xl text-kon">
-          特別な一日に、特別な一枚を。
-        </h2>
+        <h2 className="font-serif text-3xl text-kon">{closingCta.title}</h2>
         <p className="mt-4 text-sm leading-relaxed text-sumi/70">
-          豊富な品揃えから、あなたにぴったりの着物を見つけてください。
+          {closingCta.lead}
         </p>
+        {summary && (
+          <p className="mt-2 text-sm text-sumi/60">
+            {fillCatalogNote(closingCta.noteTemplate, summary)}
+          </p>
+        )}
         <Link
-          href="/kimonos"
+          href={closingCta.cta.href}
           className="mt-8 inline-block rounded-full bg-kon px-8 py-3 text-sm font-medium text-washi transition hover:bg-kon-light"
         >
-          着物を探す
+          {closingCta.cta.label}
         </Link>
       </section>
     </>
   );
 }
-
-// トップページの静的コンテンツ
-const features = [
-  {
-    icon: "🚚",
-    title: "全国どこでも配送",
-    body: "ご自宅までお届け。返却も同梱の伝票で送るだけ。店頭受取もお選びいただけます。",
-  },
-  {
-    icon: "👘",
-    title: "豊富なサイズ・柄",
-    body: "振袖から浴衣まで、S〜Lの幅広いサイズと季節の柄を取り揃えています。",
-  },
-  {
-    icon: "✨",
-    title: "安心のクリーニング",
-    body: "専門スタッフによる仕上げでいつも清潔。万一の汚れも安心保証つき（サンプル）。",
-  },
-];
-
-const steps = [
-  { title: "選ぶ", body: "お好みの着物・サイズ・レンタル開始日を選んでカートに入れます。" },
-  { title: "予約する", body: "お客様情報を入力してお申し込み。受付番号が発行されます。" },
-  { title: "受け取る", body: "開始日に合わせて配送、または店頭でお受け取りください。" },
-  { title: "返却する", body: "ご利用後は同梱の伝票で返送するだけ。面倒な手間はありません。" },
-];
