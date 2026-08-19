@@ -5,6 +5,46 @@
 
 ---
 
+## loop 66 — 商品一覧のページネーション（8件/頁）（2026-08-19）
+
+### 経緯
+- ROADMAP上から順で残っていた「商品一覧のページネーション」に着手。
+  商品が増えたときに1画面へ全件並べない形にする。検索・並び替え（loop 37）と
+  同じ `kimono-filter.ts` に純粋ロジックとして足し、URLクエリで状態を持つ。
+
+### やったこと
+- `lib/kimono-filter.ts`: `PAGE_SIZE = 8` と純粋関数を追加。
+  - `countPages(total, pageSize)` … 端数切り上げ。0件でも1ページ扱い（空一覧を表示するため）
+  - `parsePage(v, pages)` … クエリ文字列を正規化。数値でない/1未満/超過は範囲内に丸める（404にしない）
+  - `paginate(items, page, pageSize)` … `{ items, page, totalPages, total }` を返す
+  - `pageWindow(page, totalPages, max=5)` … 現在ページ中心のページ番号列（端では反対側へ寄せる）
+- `components/Pagination.tsx`（新規）: 前へ/番号/次へ。`category`・`q`・`sort` を
+  引き継ぎ、1ページ目には `page` を付けない（同内容のURLを2種類作らないため）。
+  1ページしか無いときは描画しない。
+- `app/(site)/kimonos/page.tsx`: `page` クエリを受け取り、絞り込み結果に `paginate` を適用。
+  件数表示を「10件／1 / 2 ページ」の形に拡張。
+- `tests/kimono-filter.test.ts`: 上記4関数のテストを追加（56→68件）。
+- `scripts/e2e/kimonos-pagination.mjs`（新規）: 1頁8件・次へ/前へ・2頁目が重複しない・
+  並び替え条件の維持・絞り込み時はページ送りを出さない、をPlaywrightで確認。
+
+### 気づき
+- 条件を変えたときのページリセットは、`KimonoFilters` が毎回 `URLSearchParams` を
+  作り直しているため自動的に効く（`page` が引き継がれない）。追加実装は不要だった。
+- e2eはDBを読むだけでデータを作らないので、後片付けは `$disconnect` のみ。
+
+### 結果
+- ESLint 0・vitest 68件パス・`next build` 成功。
+- `npx tsx scripts/e2e/kimonos-pagination.mjs` **PASS**（5項目すべて確認）。
+  スクリーンショットでもレイアウト崩れが無いことを確認。
+
+### 気づき・次への申し送り
+- 現在は全件をDBから取ってから in-memory で切り出している（商品10件のため）。
+  件数が数百を超えるようなら、`take`/`skip` でDB側に寄せるタスクを起票すること。
+- 残タスク: 「予約入力バリデーションの純粋関数化＋テスト」
+  「Capacitor の実機ビルド（要 macOS/Android Studio・この環境では不可）」。
+
+---
+
 ## loop 65 — 入金ステータス判定を純粋関数へ切り出し（2026-08-19）
 
 ### 経緯

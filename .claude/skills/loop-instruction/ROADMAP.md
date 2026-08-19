@@ -104,9 +104,9 @@
   - [x] ヘッダーのお気に入り導線（件数バッジ）＋お気に入り一覧ページ（/favorites） (loop 39)
 - [x] トップページに最新レビューの抜粋（「お客様の声」）を表示（loop 42 の申し送り事項） (loop 46)
 - [x] 予約申込フォームの自動入力（ログイン中は会員情報＋直近の予約内容で初期値を埋める） (loop 48)
-- [ ] 商品一覧のページネーション（件数が増えた場合に備えて。8件/頁程度を想定。
-      `claude/loop-instruction-skill-continue-ruwp7i` の loop 35 相当を現行の
-      `kimono-filter.ts`/検索・並び替えと統合する形で作り直す）
+- [x] 商品一覧のページネーション（8件/頁。`kimono-filter.ts` に純粋関数
+      `paginate`/`parsePage`/`countPages`/`pageWindow` を追加し、カテゴリ・検索・
+      並び替えの条件を保ったままページ移動できる `Pagination` を設置） (loop 66)
 
 ## 品質・整備
 
@@ -118,6 +118,7 @@
 - [x] 入金ステータス判定の純粋関数化 — `paymentStatuses`（選択肢の唯一の定義）と
       `isPayable`（未払いのときだけ支払い導線を出す）に切り出し、UI・サーバー
       アクションの分岐を統一。単体テスト3件追加（53→56件） (loop 65)
+- [x] Playwright e2e: 商品一覧のページネーション（`scripts/e2e/kimonos-pagination.mjs`） (loop 66)
 - [x] e2e 実行基盤の安定化 — 環境同梱Chromiumを使う `scripts/e2e/browser.mjs`
       （`launchChromium()`）を追加して既存6本を移行、更新完了待ちの競合を修正、
       loop 60 の仕様変更で壊れていた signup 手順を修正。e2e 6本すべてPASS (loop 64)
