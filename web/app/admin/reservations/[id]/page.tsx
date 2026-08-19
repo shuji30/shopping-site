@@ -10,6 +10,7 @@ import { formatJP, rentalEndDate, latestReturnDate } from "@/lib/date";
 import { StatusBadge } from "@/components/StatusBadge";
 import { PaymentBadge } from "@/components/PaymentBadge";
 import { StatusControl } from "@/components/StatusControl";
+import { PaymentControl } from "@/components/PaymentControl";
 
 export const metadata: Metadata = { title: "予約詳細（管理）" };
 export const dynamic = "force-dynamic";
@@ -69,6 +70,12 @@ export default async function AdminReservationDetailPage({
       <h2 className="mt-8 font-serif text-lg text-kon">ステータス変更</h2>
       <div className="mt-3">
         <StatusControl id={r.id} current={r.status} />
+      </div>
+
+      {/* 入金ステータス変更 */}
+      <h2 className="mt-8 font-serif text-lg text-kon">入金ステータス変更</h2>
+      <div className="mt-3">
+        <PaymentControl id={r.id} current={r.paymentStatus} />
       </div>
 
       {/* 明細 */}

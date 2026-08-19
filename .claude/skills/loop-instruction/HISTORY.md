@@ -5,6 +5,47 @@
 
 ---
 
+## loop 62 — 管理画面から入金ステータスを手動更新（自律ループ）（2026-08-19）
+
+### 経緯
+- `/loop`（自律・自己ペース）で起動。会話の直近の確立された作業パターン
+  （ROADMAP駆動のループ継続）を継続する形で、ROADMAP上から次の未着手タスク
+  「入金ステータスの手動更新」に着手（Capacitor実機ビルドは環境制約のためスキップ）。
+
+### やったこと
+- `lib/payment.ts`: `PaymentStatus`に`"refunded"`（返金済み）を追加
+  （旧: unpaid/paid の2値 → unpaid/paid/refunded の3値）。
+- 3値化に伴い、影響箇所を洗い出して修正（放置すると二重決済等の実バグになるため）：
+  - `app/(site)/mypage/page.tsx`・`components/OrderLookup.tsx`：決済ボタンの
+    表示条件を `paymentStatus !== "paid"` → `paymentStatus === "unpaid"` に変更
+    （返金済みでも決済ボタンが再度出てしまうのを防止）。
+  - `lib/actions/payment.ts`：`payReservation`/`payMyReservation`に
+    「返金済みなら決済不可」のガードを追加（返金済み予約への再課金を防止）。
+  - `tests/payment.test.ts`：`isPaymentStatus("refunded")`が`false`である
+    前提の既存テストを、新仕様（`true`）に合わせて修正。
+- `lib/actions/admin-payment.ts`：`updatePaymentStatus`（`StatusControl`と
+  同型、`/admin`配下でBasic認証保護）。
+- `components/PaymentControl.tsx`：未入金/支払い済み/返金済みを切り替える
+  管理画面用ボタン群（`StatusControl.tsx`を踏襲）。
+- 管理画面の予約詳細ページに「入金ステータス変更」セクションを追加。
+- `scripts/e2e/admin-payment-status.mjs`：会員登録→予約→未払いバッジ確認→
+  管理画面で「返金済み」に変更→マイページのバッジ変化と決済ボタン消失を
+  Playwrightで確認するスクリプトを追加。
+
+### 結果
+- ESLint 0・vitest 53件パス（不整合テスト1件を修正済み）・`next build`成功。
+- `ADMIN_PASSWORD=e2e-test-pass npx tsx scripts/e2e/admin-payment-status.mjs`
+  実行で **PASS**。
+- 「管理画面」ROADMAPグループが全て完了。
+
+### 気づき・次への申し送り
+- `master`へはまだマージ・pushしていない（自律ループでは、ユーザーの明示的な
+  指示が無い限りmasterへpushしない方針を維持）。
+- 次はROADMAP上から「/legal（特定商取引法に基づく表記）」
+  「商品一覧のページネーション」「予約入力バリデーションの純粋関数化」のいずれか。
+
+---
+
 ## loop 61 — パスワードリマインダー（再設定機能）を追加（2026-08-19）
 
 ### 経緯

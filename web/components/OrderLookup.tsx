@@ -213,6 +213,10 @@ export function OrderLookup() {
                 <p className="rounded-md bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
                   お支払いは完了しています。ありがとうございます。
                 </p>
+              ) : r.paymentStatus === "refunded" ? (
+                <p className="rounded-md bg-washi-dark px-4 py-3 text-sm text-sumi/60">
+                  この予約は返金済みです。
+                </p>
               ) : r.status === "cancelled" ? (
                 <p className="rounded-md bg-washi-dark px-4 py-3 text-sm text-sumi/60">
                   キャンセル済みの予約のため、お支払いはできません。

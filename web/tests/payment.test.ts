@@ -10,10 +10,11 @@ describe("isPaymentStatus", () => {
   it("既知のステータスを受理する", () => {
     expect(isPaymentStatus("unpaid")).toBe(true);
     expect(isPaymentStatus("paid")).toBe(true);
+    expect(isPaymentStatus("refunded")).toBe(true);
   });
 
   it("未知の値を拒否する", () => {
-    expect(isPaymentStatus("refunded")).toBe(false);
+    expect(isPaymentStatus("cancelled")).toBe(false);
     expect(isPaymentStatus("")).toBe(false);
   });
 });
@@ -22,6 +23,7 @@ describe("paymentStatusLabel", () => {
   it("既知ステータスは日本語ラベルを返す", () => {
     expect(paymentStatusLabel("unpaid")).toBe("未払い");
     expect(paymentStatusLabel("paid")).toBe("支払い済み");
+    expect(paymentStatusLabel("refunded")).toBe("返金済み");
   });
 
   it("未知の値はそのまま返す", () => {

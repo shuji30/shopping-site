@@ -89,12 +89,12 @@ export default async function MyPage() {
                 </div>
 
                 {(isCancellable(r.status) ||
-                  (r.paymentStatus !== "paid" && r.status !== "cancelled")) && (
+                  (r.paymentStatus === "unpaid" && r.status !== "cancelled")) && (
                   <div className="mt-4 flex flex-wrap items-start justify-end gap-3 border-t border-kin/15 pt-4">
                     {isCancellable(r.status) && (
                       <CancelButton reservationId={r.id} />
                     )}
-                    {r.paymentStatus !== "paid" && r.status !== "cancelled" && (
+                    {r.paymentStatus === "unpaid" && r.status !== "cancelled" && (
                       <div>
                         <PayNowButton reservationId={r.id} amount={r.total} />
                         <p className="mt-2 text-right text-xs text-sumi/50">

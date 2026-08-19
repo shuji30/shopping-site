@@ -8,21 +8,24 @@
 
 export type PaymentStatus =
   | "unpaid" // 未払い
-  | "paid"; // 支払い済み
+  | "paid" // 支払い済み
+  | "refunded"; // 返金済み
 
 export const paymentStatusLabels: Record<PaymentStatus, string> = {
   unpaid: "未払い",
   paid: "支払い済み",
+  refunded: "返金済み",
 };
 
 /** バッジ配色（Tailwind クラス） */
 export const paymentStatusClasses: Record<PaymentStatus, string> = {
   unpaid: "bg-enji/10 text-enji",
   paid: "bg-emerald-100 text-emerald-700",
+  refunded: "bg-sumi/10 text-sumi/70",
 };
 
 export function isPaymentStatus(v: string): v is PaymentStatus {
-  return v === "unpaid" || v === "paid";
+  return v === "unpaid" || v === "paid" || v === "refunded";
 }
 
 export function paymentStatusLabel(v: string): string {

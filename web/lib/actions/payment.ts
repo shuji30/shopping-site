@@ -41,6 +41,9 @@ export async function payReservation(input: {
   if (r.paymentStatus === "paid") {
     return { ok: true, alreadyPaid: true, paymentStatus: "paid" };
   }
+  if (r.paymentStatus === "refunded") {
+    return { ok: false, error: "この予約は返金済みのため、お支払いできません。" };
+  }
 
   const result = processPayment({ orderNumber: r.orderNumber, amount: r.total });
   if (!result.ok) {
@@ -82,6 +85,9 @@ export async function payMyReservation(
 
   if (r.paymentStatus === "paid") {
     return { ok: true, alreadyPaid: true, paymentStatus: "paid" };
+  }
+  if (r.paymentStatus === "refunded") {
+    return { ok: false, error: "この予約は返金済みのため、お支払いできません。" };
   }
   if (r.status === "cancelled") {
     return { ok: false, error: "キャンセル済みの予約のため、お支払いできません。" };
