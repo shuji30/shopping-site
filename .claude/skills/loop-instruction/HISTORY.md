@@ -5,6 +5,52 @@
 
 ---
 
+## loop 72 — 管理画面でカテゴリマスタを登録・変更・削除（2026-08-20）
+
+### 経緯
+- loop 71 でDBマスタ化した土台の上に、ユーザー要望の CRUD を載せる。
+
+### やったこと
+- `lib/category-validation.ts`（新規・純粋関数）: `validateCategory`（新規/変更で
+  モードを分ける）、`isValidCategoryId`、`parseSortOrder`、`firstCategoryError` ほか。
+  予約フォーム（loop 67）と同じ方針で、判定と文言をクライアント・サーバーで共有する。
+- `lib/actions/admin-category.ts`（新規）: `createCategory` / `updateCategory` /
+  `deleteCategory`。検証・重複チェック・削除可否をサーバー側でも必ず行い、
+  成功時は `/admin/categories`・`/kimonos`・`/` を revalidate する。
+- `components/CategoryManager.tsx`（新規・クライアント）: 一覧＋行内編集＋新規追加。
+  削除は `window.confirm` を挟み、商品が紐づく行はボタン自体を disabled にする。
+- `app/admin/categories/page.tsx`（新規）: `groupBy` で商品数を1クエリにまとめて取得。
+  マスタに無い識別子が商品に残っていれば警告を出す。
+- `app/admin/layout.tsx`: ヘッダーに「カテゴリ管理」を追加。
+- `tests/category-validation.test.ts`（新規, 15件）。101→116件。
+- `scripts/e2e/admin-categories.mjs`（新規）: 登録→店舗側の絞り込みに出る→
+  識別子の重複拒否→変更→店舗側にも反映→商品ありは削除不可→商品なしは削除できて
+  店舗側からも消える、を通しで確認。
+
+### 設計判断
+- **識別子（id）は登録後に変更できない**。商品の `category` 列と、共有済みの
+  絞り込みURL（`?category=…`）が壊れるため。付け替えたいときは新規作成して
+  商品を移す運用にし、画面にもその旨を出した。
+- **商品が紐づくカテゴリは削除不可**。消すと商品のカテゴリが宙に浮き、一覧の
+  絞り込みから辿れなくなる。UIでボタンを無効化しつつ、サーバー側でも件数を見て拒否する。
+- 表示順は10刻みを既定にした（後から間に挟める）。新規追加時は「最大値+10」を初期表示。
+
+### 結果
+- ESLint 0・`tsc --noEmit` エラー0・vitest 116件パス・`next build` 成功
+  （`/admin/categories` ルートが追加されている）。
+- `npx tsx scripts/e2e/admin-categories.mjs` **PASS**（5項目すべて確認）。
+- スクリーンショットで一覧・追加フォームの表示を確認。
+
+### 気づき・次への申し送り
+- **本番反映には Turso へのマイグレーション適用が先に必要**（loop 71 の申し送りと同じ）。
+  この環境に `turso` CLI が無いためユーザー作業。適用せずデプロイすると
+  `Category` テーブルが無く、トップ・一覧・管理画面が落ちる。
+- 商品側のカテゴリ変更UIはまだ無い（商品マスタの管理画面が未実装）。
+  「商品が紐づくカテゴリを削除したい」ときは現状DBを直接触るしかないので、
+  商品マスタのCRUDが次の自然な候補。
+
+---
+
 ## loop 71 — 商品カテゴリをDBマスタ化（挙動不変）（2026-08-20）
 
 ### 経緯

@@ -23,6 +23,12 @@ export default function AdminLayout({ children }: LayoutProps<"/admin">) {
             <Link href="/admin/reviews" className="transition hover:text-kin">
               レビュー管理
             </Link>
+            <Link
+              href="/admin/categories"
+              className="transition hover:text-kin"
+            >
+              カテゴリ管理
+            </Link>
             <Link href="/" className="text-washi/70 transition hover:text-kin">
               サイトへ →
             </Link>
