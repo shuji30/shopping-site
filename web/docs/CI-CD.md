@@ -7,9 +7,41 @@
 
 - **開発は `develop` ブランチ**で行う（詳細は
   `.claude/skills/loop-instruction/SKILL.md` の「Git運用」節）。
-- **`master` は本番相当**。`develop` の内容をマージして
-  `git push origin master` すると、下記CDが自動的に発火する。
-  **`master` への push は必ず人間が行う。**
+- **`master` は本番相当**。`master` が更新されると下記CDが自動的に発火し、
+  **即座に本番（Cloud Run）へ反映される**。
+
+### 本番反映は Pull Request 経由を既定とする
+
+`develop` → `master` の PR を作り、CI が通ったことを確認してからマージする。
+直接 `git push origin master` でも反映はできるが、次の理由からPRを既定とする。
+
+- **何を本番に出したかが記録に残る**。直マージだとコミット履歴しか残らず、
+  「動作確認したか」「反映時に注意することがあったか」が後から追えない。
+- **マージ前にCIの結果を1か所で確認できる**。
+- **切り戻しの単位が明確**（PRのマージコミットを revert すればよい）。
+
+PR本文は `.github/pull_request_template.md` の枠を埋める形で書く。
+とくに **「本番反映時の注意」と「デプロイ後の確認」** は、
+マージする人が読む前提で必ず記入すること。
+
+```bash
+# 例: develop の内容を本番へ出す PR を作る
+gh pr create --base master --head develop --title "release: loop NN までを本番反映"
+```
+
+Claude が反映作業を代行するのは、ユーザーから「pushして」「本番反映して」等の
+**明示的な指示があった場合のみ**（SKILL.md の禁止事項を参照）。
+
+### CI を必須にする設定（未実施・人間の作業）
+
+現状ブランチ保護は設定していないため、CI が赤いままでもマージできてしまう。
+GitHub の Settings → Branches → Add branch protection rule で `master` に対し、
+
+- Require a pull request before merging
+- Require status checks to pass before merging → `lint-test-build` を選択
+
+を設定すると、CI 通過を必須にできる。リポジトリ管理者の操作が必要なため、
+ここでは手順の記載に留める。
 
 ## CI（`.github/workflows/ci.yml`）
 
