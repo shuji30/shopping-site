@@ -131,7 +131,11 @@
 - [x] 入金ステータス判定の純粋関数化 — `paymentStatuses`（選択肢の唯一の定義）と
       `isPayable`（未払いのときだけ支払い導線を出す）に切り出し、UI・サーバー
       アクションの分岐を統一。単体テスト3件追加（53→56件） (loop 65)
-- [ ] Pull Request 運用のブラッシュアップ — 現状 `develop` → `master` は直マージで、
+- [x] Pull Request 運用のブラッシュアップ (loop 70) — `.github/pull_request_template.md`
+      を追加し、本番反映はPR経由を既定とする運用を SKILL.md「Git運用」節と
+      `web/docs/CI-CD.md` に明文化。ブランチ保護（CI必須化）は管理者操作が必要なため
+      手順の記載に留めた（未設定＝CIが赤くてもマージできる点を注意書き）。
+      〈当初のメモ〉現状 `develop` → `master` は直マージで、
       変更内容のレビュー記録が残らない。次を整える:
       - `.github/pull_request_template.md` を追加（変更概要 / 動作確認したこと /
         影響範囲 / 本番反映時の注意 を埋める形。**現状このリポジトリにテンプレートは無い**）
