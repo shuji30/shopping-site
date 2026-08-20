@@ -16,6 +16,7 @@ function k(partial: Partial<Kimono> & { id: string; price: number }): Kimono {
   return {
     name: "",
     category: "furisode",
+    categoryLabel: "振袖",
     rentalDays: 3,
     sizes: ["M"],
     colors: [],

@@ -1,13 +1,11 @@
 // 着物レンタルECサイトのドメイン型定義
 
-/** 着物のカテゴリ識別子 */
-export type KimonoCategoryId =
-  | "furisode" // 振袖
-  | "houmongi" // 訪問着
-  | "tomesode" // 留袖
-  | "hakama" // 袴
-  | "yukata" // 浴衣
-  | "tsukesage"; // 付け下げ
+/**
+ * 着物のカテゴリ識別子。
+ * loop 71 でカテゴリをDBマスタ化したため、値をユニオン型で固定できなくなった
+ * （管理画面から自由に追加できる）。読みやすさのために別名だけ残している。
+ */
+export type KimonoCategoryId = string;
 
 /** 着物1点のデータ */
 export interface Kimono {
@@ -15,8 +13,15 @@ export interface Kimono {
   id: string;
   /** 商品名 */
   name: string;
-  /** カテゴリ */
+  /** カテゴリ識別子 */
   category: KimonoCategoryId;
+  /**
+   * カテゴリの表示名。DB から引くたびに解決して埋める。
+   * クライアントコンポーネント（ProductCard など）はDBに触れないため、
+   * 表示に必要なラベルは商品と一緒に持ち回る。
+   * カテゴリが削除済みなどで引けない場合は識別子をそのまま入れる。
+   */
+  categoryLabel: string;
   /** レンタル料金（税込・円） */
   price: number;
   /** レンタル期間（日数） */
@@ -41,11 +46,19 @@ export interface Kimono {
   featured?: boolean;
 }
 
-/** カテゴリの表示用メタデータ */
+/**
+ * 初期データ（data/kimonos.ts）や seed で使う商品の型。
+ * カテゴリ表示名は DB から解決するものなので、投入時には持たない。
+ */
+export type KimonoSeed = Omit<Kimono, "categoryLabel">;
+
+/** カテゴリマスタ（DBの Category テーブルに対応） */
 export interface KimonoCategory {
   id: KimonoCategoryId;
   /** 表示名（日本語） */
   label: string;
   /** 短い説明 */
   description: string;
+  /** 表示順（小さいほど先） */
+  sortOrder: number;
 }

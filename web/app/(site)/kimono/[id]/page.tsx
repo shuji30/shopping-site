@@ -4,7 +4,6 @@ import type { Metadata } from "next";
 import { getKimonoById } from "@/lib/kimono-repository";
 import { getReservedRanges } from "@/lib/availability";
 import { getReviewsByKimono, getReviewStats } from "@/lib/review-repository";
-import { getCategoryLabel } from "@/lib/categories";
 import { formatJP } from "@/lib/date";
 import { KimonoImage } from "@/components/KimonoImage";
 import { AddToCartForm } from "@/components/AddToCartForm";
@@ -42,7 +41,7 @@ export default async function KimonoDetailPage({
   ]);
 
   const specs: { label: string; value: string }[] = [
-    { label: "カテゴリ", value: getCategoryLabel(kimono.category) },
+    { label: "カテゴリ", value: kimono.categoryLabel },
     { label: "サイズ", value: kimono.sizes.join(" / ") },
     { label: "色", value: kimono.colors.join("・") },
     { label: "素材", value: kimono.material },
@@ -76,7 +75,7 @@ export default async function KimonoDetailPage({
         {/* 情報 */}
         <div>
           <span className="inline-block rounded bg-kon/90 px-3 py-1 text-xs text-washi">
-            {getCategoryLabel(kimono.category)}
+            {kimono.categoryLabel}
           </span>
           <h1 className="mt-3 font-serif text-3xl leading-snug text-kon">
             {kimono.name}

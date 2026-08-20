@@ -1,10 +1,10 @@
-import type { Kimono } from "@/lib/types";
+import type { KimonoSeed } from "@/lib/types";
 
 /**
  * サンプル商品データ（MVP用）。
  * 実際の在庫・写真が用意でき次第、DB やヘッドレスCMS へ移行し、画像も差し替える。
  */
-export const kimonos: Kimono[] = [
+export const kimonos: KimonoSeed[] = [
   {
     id: "furisode-hanakanzashi",
     name: "振袖 花簪（はなかんざし）",
@@ -147,18 +147,3 @@ export const kimonos: Kimono[] = [
     inStock: true,
   },
 ];
-
-/** 全商品を取得 */
-export function getAllKimonos(): Kimono[] {
-  return kimonos;
-}
-
-/** ID から1点を取得 */
-export function getKimonoById(id: string): Kimono | undefined {
-  return kimonos.find((k) => k.id === id);
-}
-
-/** 注目商品を取得 */
-export function getFeaturedKimonos(): Kimono[] {
-  return kimonos.filter((k) => k.featured);
-}

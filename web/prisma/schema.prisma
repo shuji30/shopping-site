@@ -10,6 +10,19 @@ datasource db {
   provider = "sqlite"
 }
 
+/// 商品カテゴリのマスタ（管理画面から登録・変更・削除する）
+model Category {
+  /// URL のクエリにも使う識別子（例: "furisode"）。作成後は変更しない
+  id          String   @id
+  /// 表示名（例: "振袖"）
+  label       String
+  /// 一覧やトップで添える短い説明
+  description String
+  /// 表示順（小さいほど先。同値なら id 順）
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
 /// 着物商品
 model Kimono {
   id          String   @id

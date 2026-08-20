@@ -2,8 +2,23 @@
 // アダプタ選択（SQLite/Postgres/Turso）と安全な切断は lib/db.ts に委ねる。
 import { prisma } from "../lib/db";
 import { kimonos } from "../data/kimonos";
+import { initialCategories } from "../data/categories";
 
 async function main() {
+  // カテゴリマスタ（管理画面から編集されるので、既存行は上書きしない）
+  for (const c of initialCategories) {
+    await prisma.category.upsert({
+      where: { id: c.id },
+      update: {},
+      create: {
+        id: c.id,
+        label: c.label,
+        description: c.description,
+        sortOrder: c.sortOrder,
+      },
+    });
+  }
+
   for (const k of kimonos) {
     await prisma.kimono.upsert({
       where: { id: k.id },
@@ -24,8 +39,11 @@ async function main() {
       },
     });
   }
-  const count = await prisma.kimono.count();
-  console.log(`seeded: ${count} kimonos`);
+  const [count, categoryCount] = await Promise.all([
+    prisma.kimono.count(),
+    prisma.category.count(),
+  ]);
+  console.log(`seeded: ${count} kimonos, ${categoryCount} categories`);
 }
 
 main()

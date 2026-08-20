@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "./db";
+import { getCategoryLabelMap } from "./category-repository";
 import type { Kimono, KimonoCategoryId } from "./types";
 
 // DB の行を、アプリのドメイン型 Kimono に変換する。
@@ -19,11 +20,14 @@ type KimonoRow = {
   featured: boolean;
 };
 
-function toDomain(row: KimonoRow): Kimono {
+// カテゴリ表示名は Category マスタから引いて埋める。マスタに無い識別子
+// （カテゴリ削除後の商品など）は識別子をそのまま表示して、空欄にしない。
+function toDomain(row: KimonoRow, labels: Map<string, string>): Kimono {
   return {
     id: row.id,
     name: row.name,
     category: row.category as KimonoCategoryId,
+    categoryLabel: labels.get(row.category) ?? row.category,
     price: row.price,
     rentalDays: row.rentalDays,
     sizes: JSON.parse(row.sizes) as string[],
@@ -37,31 +41,43 @@ function toDomain(row: KimonoRow): Kimono {
 }
 
 export async function getAllKimonos(): Promise<Kimono[]> {
-  const rows = await prisma.kimono.findMany({ orderBy: { createdAt: "asc" } });
-  return rows.map(toDomain);
+  const [rows, labels] = await Promise.all([
+    prisma.kimono.findMany({ orderBy: { createdAt: "asc" } }),
+    getCategoryLabelMap(),
+  ]);
+  return rows.map((r) => toDomain(r, labels));
 }
 
 export async function getKimonoById(id: string): Promise<Kimono | null> {
-  const row = await prisma.kimono.findUnique({ where: { id } });
-  return row ? toDomain(row) : null;
+  const [row, labels] = await Promise.all([
+    prisma.kimono.findUnique({ where: { id } }),
+    getCategoryLabelMap(),
+  ]);
+  return row ? toDomain(row, labels) : null;
 }
 
 export async function getFeaturedKimonos(): Promise<Kimono[]> {
-  const rows = await prisma.kimono.findMany({
-    where: { featured: true },
-    orderBy: { createdAt: "asc" },
-  });
-  return rows.map(toDomain);
+  const [rows, labels] = await Promise.all([
+    prisma.kimono.findMany({
+      where: { featured: true },
+      orderBy: { createdAt: "asc" },
+    }),
+    getCategoryLabelMap(),
+  ]);
+  return rows.map((r) => toDomain(r, labels));
 }
 
 export async function getKimonosByCategory(
   category: KimonoCategoryId,
 ): Promise<Kimono[]> {
-  const rows = await prisma.kimono.findMany({
-    where: { category },
-    orderBy: { createdAt: "asc" },
-  });
-  return rows.map(toDomain);
+  const [rows, labels] = await Promise.all([
+    prisma.kimono.findMany({
+      where: { category },
+      orderBy: { createdAt: "asc" },
+    }),
+    getCategoryLabelMap(),
+  ]);
+  return rows.map((r) => toDomain(r, labels));
 }
 
 /** 静的生成（generateStaticParams）用に ID 一覧を取得 */
