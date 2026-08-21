@@ -96,6 +96,15 @@
       - 適用に失敗したらデプロイを中止する（壊れたコードを本番へ出さない）
       - 自動化できるまでの暫定として、手順を `docs/CI-CD.md` に runbook 化し、
         PRテンプレートの「本番反映時の注意」に必ず書く運用にする
+- [ ] CD の OIDC トークン取得を1回で確定させる — `google-github-actions/auth@v2` の既定は
+      **認証トークンを使うたびに** GitHub の OIDC エンドポイントへ取りに行くため、
+      Docker push の時点で通信が途切れると `Unable to retrieve Identity Pool subject token`
+      → `denied: Unauthenticated request` で落ちる（loop 75 の run #11 で実際に発生。
+      再実行で通ったので設定ミスではなく一過性のネットワーク障害）。
+      `token_format: 'access_token'` を指定して auth ステップでアクセストークンを
+      確定させ、以後 OIDC に触らない形にする。あわせて次も検討:
+      - `access_token_lifetime` をビルド時間より十分長く（既定1時間で足りる想定）
+      - それでも落ちる場合に備え、push ステップだけ数回リトライする
 - [ ] `migrate-turso.mjs` のエラーメッセージ改善 — 「どちらの環境変数が空か」を
       個別に出す（loop 75 の切り分けに手間取った反省）
 - [ ] スキーマ変更を含む反映の事前チェック — マージ前に「本番DBに必要なテーブル/列が

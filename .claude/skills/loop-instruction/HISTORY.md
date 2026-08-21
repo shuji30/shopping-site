@@ -38,9 +38,25 @@
   確認せずに案内だけして進めた**のは loop 73 の反省（「手順を渡した」は
   「適用された」ではない）と同じ構造。設定の所在は推測せず確認すべきだった。
 
+### その後（同ループ内・run #11）
+- `environment:` 追加後の再デプロイでは**マイグレーションステップは通った**が、
+  次の Docker push で `denied: Unauthenticated request` で失敗した。原因は権限ではなく
+  ネットワーク由来の一過性障害:
+  ```
+  ERROR: (gcloud.auth.docker-helper) There was a problem refreshing your current auth tokens:
+  ('Unable to retrieve Identity Pool subject token',
+   'upstream connect error or disconnect/reset before headers. ... connection timeout')
+  ```
+  `google-github-actions/auth@v2` の既定方式は、認証トークンを**使うたびに**
+  GitHub の OIDC エンドポイントへ取りに行く。その通信が push の瞬間に切れ、
+  gcloud が未認証扱いになった。**失敗ジョブを1回再実行して success**（attempt 2）。
+- これで **マイグレーション自動化が初めて本番で動いた**（バージョン 0.11.2）。
+
 ### 次への申し送り
 - スクリプトのエラーメッセージを「どちらの変数が空か」個別に出す形にすると、
   次回の切り分けが早い。小さいので次のループで対応する。
+- 上記の OIDC タイムアウトは**また起きる**。`token_format: 'access_token'` で
+  auth ステップの時点でトークンを確定させる恒久対策を ROADMAP に起票した。
 
 ---
 
