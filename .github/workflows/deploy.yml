@@ -21,6 +21,10 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # DB接続情報は Environment（shopping-site-db）の secrets に置いている。
+    # この指定が無いと `secrets.TURSO_*` は空になり、マイグレーションが
+    # 「未設定」で停止する（loop 75 で実際に踏んだ）。
+    environment: shopping-site-db
     steps:
       - uses: actions/checkout@v4
         with:

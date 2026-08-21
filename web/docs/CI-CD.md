@@ -85,8 +85,13 @@ GitHub の Settings → Branches → Add branch protection rule で `master` に
 | Secret | `TURSO_AUTH_TOKEN` | `turso db tokens create miyabi` の出力 |
 | Variable | `TURSO_MIGRATION_BASELINE` | 初回のみ。既存DBに適用済みの最後の名前 |
 
-Settings → Secrets and variables → Actions で登録する。ベースラインは
-台帳ができた後は不要なので、初回のデプロイが通ったら削除してよい。
+**置き場所は Environment `shopping-site-db`**（Settings → Environments）。
+deploy ジョブに `environment: shopping-site-db` を指定しているのはこのため。
+Repository secrets に置いても読まれないので注意（`environment:` が指定された
+ジョブは Environment → Repository の順に解決するので Repository 側でも動くが、
+運用としては Environment に寄せる）。
+
+ベースラインは台帳ができた後は不要なので、初回のデプロイが通ったら削除してよい。
 
 手元で確認したいときは `--dry-run` を付けると、何を適用するかだけ表示する:
 
