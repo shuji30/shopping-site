@@ -85,3 +85,10 @@ export async function getAllKimonoIds(): Promise<string[]> {
   const rows = await prisma.kimono.findMany({ select: { id: true } });
   return rows.map((r) => r.id);
 }
+
+/** その商品が予約明細で使われている件数（削除可否の判定に使う） */
+export async function countReservationItemsForKimono(
+  kimonoId: string,
+): Promise<number> {
+  return prisma.reservationItem.count({ where: { kimonoId } });
+}

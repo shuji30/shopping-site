@@ -71,6 +71,8 @@
         カテゴリは管理できるのに商品ができない。現状は `data/kimonos.ts` を編集して
         `npm run db:seed` する運用で、**デプロイと手作業が必要**。しかも seed は
         `update: {}` なので既存行は更新されず、**価格や在庫の変更ができない**。
+    - [x] 検証とサーバーアクションの土台 (loop 79) — `lib/kimono-validation.ts`（純粋関数）と
+          `lib/actions/admin-kimono.ts`（create/update/delete）。UIは次ループ
     - [ ] 一覧・新規登録・編集（`/admin/kimonos`）
           項目: 識別子 / 商品名 / カテゴリ（マスタから選択）/ レンタル料 / レンタル日数 /
           サイズ / 色 / 素材 / 説明 / 在庫 / 注目フラグ。
