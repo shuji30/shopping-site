@@ -42,6 +42,27 @@ jobs:
           echo "APP_VERSION=$X.$Y.$Z" >> "$GITHUB_ENV"
           echo "computed version: $X.$Y.$Z"
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # マイグレーションは Cloud Run へ出す**前**に適用する。
+      # 失敗したらここで止まり、デプロイは実行されない（壊れたコードを本番に出さない）。
+      # 台帳が空の初回だけ TURSO_MIGRATION_BASELINE が必要（既存DBを取り込むため）。
+      - name: Apply DB migrations (Turso)
+        working-directory: web
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          BASELINE: ${{ vars.TURSO_MIGRATION_BASELINE }}
+        run: |
+          npm ci --ignore-scripts
+          if [ -n "$BASELINE" ]; then
+            npx tsx scripts/migrate-turso.mjs --baseline "$BASELINE"
+          else
+            npx tsx scripts/migrate-turso.mjs
+          fi
+
       - id: auth
         uses: google-github-actions/auth@v2
         with:
