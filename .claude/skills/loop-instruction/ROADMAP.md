@@ -77,6 +77,22 @@
 
 ## デプロイ・インフラ
 
+- [ ] **【最優先】本番マイグレーションの自動化** — 現状 CD（`deploy.yml`）はマイグレーションを
+      実行せず（Dockerfile の `CMD` も `node server.js` のみ）、スキーマ変更を含む反映のたびに
+      Turso への手作業が必要。**loop 71-72 の反映でこれを踏み、本番が全ページ500になった**
+      （`Category` テーブルが未作成のまま新コードが動いた）。次を検討する:
+      - `deploy.yml` の `gcloud run deploy` の**前**に、Turso CLI で未適用の
+        `prisma/migrations/*/migration.sql` を流すステップを追加
+      - 適用済み判定の持ち方（`_prisma_migrations` 相当を自前で用意するか、
+        `CREATE TABLE IF NOT EXISTS` など冪等なSQLに限定するか）を決める
+      - `TURSO_AUTH_TOKEN` を GitHub Secrets に登録（一度だけ・人間の作業）
+      - 適用に失敗したらデプロイを中止する（壊れたコードを本番へ出さない）
+      - 自動化できるまでの暫定として、手順を `docs/CI-CD.md` に runbook 化し、
+        PRテンプレートの「本番反映時の注意」に必ず書く運用にする
+- [ ] スキーマ変更を含む反映の事前チェック — マージ前に「本番DBに必要なテーブル/列が
+      あるか」を確認する手段がない（この環境からは Turso にも本番URLにも到達できない）。
+      CI で本番DBへ読み取り専用の疎通確認を行うか、少なくとも PR に
+      「適用済みであることの確認方法」を書かせる。
 - [x] 本番DB（Postgres）対応の下準備 — DATABASE_URL でアダプタ自動選択＋切替手順（loop 30 / docs/DEPLOYMENT.md）
 - [x] GCP(Cloud Run)公開の下準備 — Dockerfile（standalone）＋.dockerignore＋docs/DEPLOY-GCP.md（Cloud Run + Cloud SQL） (loop 45)
 - [x] DB を Turso（libSQL無料枠）にも対応 — コード変更なしで本番運用可能に。
