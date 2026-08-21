@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { Kimono } from "@/lib/types";
-import { getCategoryLabel } from "@/lib/categories";
 import { KimonoImage } from "./KimonoImage";
 import { FavoriteButton } from "./FavoriteButton";
 
@@ -18,7 +17,7 @@ export function ProductCard({ kimono }: { kimono: Kimono }) {
           className="h-full w-full transition-transform duration-500 group-hover:scale-105"
         />
         <span className="absolute right-2 top-2 rounded bg-kon/90 px-2 py-1 text-xs text-washi">
-          {getCategoryLabel(kimono.category)}
+          {kimono.categoryLabel}
         </span>
         {!kimono.inStock && (
           <span className="absolute left-2 top-2 rounded bg-sumi/80 px-2 py-1 text-xs text-washi">

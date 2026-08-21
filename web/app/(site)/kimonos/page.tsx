@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getAllKimonos, getKimonosByCategory } from "@/lib/kimono-repository";
-import { categories, getCategoryLabel } from "@/lib/categories";
+import { getCategories } from "@/lib/category-repository";
+import { findCategory, getCategoryLabel } from "@/lib/categories";
 import {
   applyKimonoQuery,
   countPages,
@@ -28,7 +29,9 @@ export default async function KimonosPage({
   }>;
 }) {
   const { category, q, sort, page } = await searchParams;
-  const active = categories.find((c) => c.id === category)?.id;
+  const categories = await getCategories();
+  // 存在しないカテゴリIDがURLに入っていた場合は「すべて」として扱う
+  const active = category ? findCategory(categories, category)?.id : undefined;
   const sortId = sort && isSortId(sort) ? sort : "recommended";
   const keyword = q ?? "";
 
@@ -43,11 +46,16 @@ export default async function KimonosPage({
       <h1 className="font-serif text-3xl text-kon">商品一覧</h1>
 
       {/* カテゴリ・検索・並び替え */}
-      <KimonoFilters active={active} q={keyword} sort={sortId} />
+      <KimonoFilters
+        categories={categories}
+        active={active}
+        q={keyword}
+        sort={sortId}
+      />
 
       <p className="mt-4 text-sm text-sumi/60">
         {paged.total}件
-        {active ? `（${getCategoryLabel(active)}）` : ""}
+        {active ? `（${getCategoryLabel(categories, active)}）` : ""}
         {keyword ? `／「${keyword}」の検索結果` : ""}
         {paged.totalPages > 1
           ? `／${paged.page} / ${paged.totalPages} ページ`

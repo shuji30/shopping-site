@@ -67,6 +67,11 @@
   - [x] 決済状況の可視化（一覧に入金列＋ダッシュボードに入金件数/入金額タイル） (loop 34)
   - [x] レビュー管理（一覧・削除によるモデレーション） (loop 47)
   - [x] 入金ステータスの手動更新（未入金/入金済み/返金済みを管理画面から切替） (loop 62)
+  - [x] 商品カテゴリマスタの管理（登録・変更・削除）— ユーザー要望（2026-08-20）。
+        現在カテゴリは `lib/categories.ts` にハードコードされており、追加や名称変更に
+        デプロイが必要。DBのマスタにして管理画面から編集できるようにする。
+    - [x] カテゴリをDBマスタ化（`Category` モデル＋リポジトリ。表示は現状のまま＝挙動不変） (loop 71)
+    - [x] 管理画面 `/admin/categories` で登録・変更・削除（商品が紐づくカテゴリは削除不可） (loop 72)
   - [x] フッターにバージョン表示（X.Y.Z＝人間が変更/masterへのpush回数/その push の
         コミット数。詳細はSKILL.mdの「バージョン表示」節） (loop 57)
 
@@ -143,6 +148,7 @@
         （PR必須にするなら、CI（lint/test/build）を merge の必須条件にする設定も併せて検討）
       - PR本文にデプロイ後の確認項目（バージョン表示・主要導線）を定型で載せる
 - [x] Playwright e2e: トップページのPR部分（`scripts/e2e/home-pr.mjs`） (loop 69)
+- [x] Playwright e2e: 管理画面のカテゴリCRUD（`scripts/e2e/admin-categories.mjs`） (loop 72)
 - [x] Playwright e2e: 予約申込フォームの入力検証（`scripts/e2e/checkout-validation.mjs`） (loop 67)
 - [x] Playwright e2e: 商品一覧のページネーション（`scripts/e2e/kimonos-pagination.mjs`） (loop 66)
 - [x] e2e 実行基盤の安定化 — 環境同梱Chromiumを使う `scripts/e2e/browser.mjs`

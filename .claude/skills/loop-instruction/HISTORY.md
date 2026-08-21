@@ -5,6 +5,102 @@
 
 ---
 
+## loop 72 — 管理画面でカテゴリマスタを登録・変更・削除（2026-08-20）
+
+### 経緯
+- loop 71 でDBマスタ化した土台の上に、ユーザー要望の CRUD を載せる。
+
+### やったこと
+- `lib/category-validation.ts`（新規・純粋関数）: `validateCategory`（新規/変更で
+  モードを分ける）、`isValidCategoryId`、`parseSortOrder`、`firstCategoryError` ほか。
+  予約フォーム（loop 67）と同じ方針で、判定と文言をクライアント・サーバーで共有する。
+- `lib/actions/admin-category.ts`（新規）: `createCategory` / `updateCategory` /
+  `deleteCategory`。検証・重複チェック・削除可否をサーバー側でも必ず行い、
+  成功時は `/admin/categories`・`/kimonos`・`/` を revalidate する。
+- `components/CategoryManager.tsx`（新規・クライアント）: 一覧＋行内編集＋新規追加。
+  削除は `window.confirm` を挟み、商品が紐づく行はボタン自体を disabled にする。
+- `app/admin/categories/page.tsx`（新規）: `groupBy` で商品数を1クエリにまとめて取得。
+  マスタに無い識別子が商品に残っていれば警告を出す。
+- `app/admin/layout.tsx`: ヘッダーに「カテゴリ管理」を追加。
+- `tests/category-validation.test.ts`（新規, 15件）。101→116件。
+- `scripts/e2e/admin-categories.mjs`（新規）: 登録→店舗側の絞り込みに出る→
+  識別子の重複拒否→変更→店舗側にも反映→商品ありは削除不可→商品なしは削除できて
+  店舗側からも消える、を通しで確認。
+
+### 設計判断
+- **識別子（id）は登録後に変更できない**。商品の `category` 列と、共有済みの
+  絞り込みURL（`?category=…`）が壊れるため。付け替えたいときは新規作成して
+  商品を移す運用にし、画面にもその旨を出した。
+- **商品が紐づくカテゴリは削除不可**。消すと商品のカテゴリが宙に浮き、一覧の
+  絞り込みから辿れなくなる。UIでボタンを無効化しつつ、サーバー側でも件数を見て拒否する。
+- 表示順は10刻みを既定にした（後から間に挟める）。新規追加時は「最大値+10」を初期表示。
+
+### 結果
+- ESLint 0・`tsc --noEmit` エラー0・vitest 116件パス・`next build` 成功
+  （`/admin/categories` ルートが追加されている）。
+- `npx tsx scripts/e2e/admin-categories.mjs` **PASS**（5項目すべて確認）。
+- スクリーンショットで一覧・追加フォームの表示を確認。
+
+### 気づき・次への申し送り
+- **本番反映には Turso へのマイグレーション適用が先に必要**（loop 71 の申し送りと同じ）。
+  この環境に `turso` CLI が無いためユーザー作業。適用せずデプロイすると
+  `Category` テーブルが無く、トップ・一覧・管理画面が落ちる。
+- 商品側のカテゴリ変更UIはまだ無い（商品マスタの管理画面が未実装）。
+  「商品が紐づくカテゴリを削除したい」ときは現状DBを直接触るしかないので、
+  商品マスタのCRUDが次の自然な候補。
+
+---
+
+## loop 71 — 商品カテゴリをDBマスタ化（挙動不変）（2026-08-20）
+
+### 経緯
+- ユーザー要望「商品カテゴリマスタを登録・変更・削除できるようにして欲しい」。
+  管理画面のCRWDまで一度に入れると1コミットに複数の関心事が混ざるため、
+  **①DBマスタ化（このループ・挙動不変）→ ②管理画面のCRUD** の2ループに分けた。
+  ROADMAP にも2段で起票済み。
+
+### やったこと
+- `prisma/schema.prisma`: `Category` モデル（id / label / description /
+  sortOrder / createdAt）。マイグレーション `20260820164502_categories`。
+- `data/categories.ts`（新規）: 初期6件。**実行時は参照せず seed 専用**
+  （実データはDBが正）。`prisma/seed.ts` で upsert（既存行は上書きしない＝
+  管理画面での編集を消さない）。
+- `lib/category-repository.ts`（新規・server-only）: `getCategories`（sortOrder→id順）
+  `getCategoryById` `getCategoryLabelMap` `countKimonosInCategory`（削除可否判定用）。
+- `lib/categories.ts`: ハードコード配列を撤去し、**DBから取った配列を受け取る
+  純粋ヘルパ**に作り替え（`findCategory` `getCategoryLabel` `sortCategories`
+  `nextSortOrder`）。
+- `lib/types.ts`: `KimonoCategoryId` をユニオン型から `string` へ（管理画面から
+  自由に追加できるため固定できない）。`Kimono` に `categoryLabel` を追加。
+  seed 用に `KimonoSeed = Omit<Kimono, "categoryLabel">` を新設。
+- `lib/kimono-repository.ts`: 取得時にカテゴリマスタを引いて `categoryLabel` を埋める。
+- `ProductCard` / 商品詳細: `getCategoryLabel(...)` の呼び出しを `kimono.categoryLabel` に置換。
+- 商品一覧ページ: カテゴリをDBから取得し `KimonoFilters` に props で渡す。
+  URLに存在しないカテゴリIDが来たら「すべて」として扱う。
+- `data/kimonos.ts`: loop 17 以降どこからも呼ばれていなかった `getAllKimonos` /
+  `getKimonoById` / `getFeaturedKimonos` を削除（参照は seed の `kimonos` のみ）。
+- `tests/categories.test.ts` を新ヘルパ向けに書き直し（94→101件）。
+
+### 気づき
+- **`ProductCard` はクライアントコンポーネント（`FavoritesView`）からも使われる**ため、
+  カテゴリ名をその場でDBから引く実装にはできなかった。商品オブジェクトに
+  `categoryLabel` を持たせて運ぶ形にしたことで、同期/非同期の問題が消えた。
+- マスタに無い識別子（カテゴリ削除後の商品など）は**識別子をそのまま表示**する
+  フォールバックにした。空欄より原因が分かりやすい。
+
+### 結果
+- ESLint 0・`tsc --noEmit` エラー0・vitest 101件パス・`next build` 成功。
+- 既存 e2e（`home-pr` / `kimonos-pagination`）ともに **PASS**＝挙動は変わっていない。
+
+### 気づき・次への申し送り
+- **本番（Turso）へのマイグレーション適用が別途必要**。この環境には `turso` CLI が
+  無いためユーザー作業になる（手順は `web/docs/DEPLOY-GCP.md`）。適用前に
+  デプロイすると `Category` テーブルが無く、トップ・一覧が落ちる。
+- 次ループで `/admin/categories` のCRUDを載せる。削除は
+  `countKimonosInCategory` が0のときのみ許可する方針。
+
+---
+
 ## loop 70 — Pull Request 運用のブラッシュアップ（2026-08-19）
 
 ### 経緯

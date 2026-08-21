@@ -1,45 +1,42 @@
-import type { KimonoCategory, KimonoCategoryId } from "./types";
+import type { KimonoCategory } from "./types";
 
-/** カテゴリの一覧（表示順） */
-export const categories: KimonoCategory[] = [
-  {
-    id: "furisode",
-    label: "振袖",
-    description: "成人式や結婚式に映える、未婚女性の第一礼装。",
-  },
-  {
-    id: "houmongi",
-    label: "訪問着",
-    description: "結婚式やお茶会など、幅広い場に着られる準礼装。",
-  },
-  {
-    id: "tomesode",
-    label: "留袖",
-    description: "既婚女性の第一礼装。親族の結婚式などに。",
-  },
-  {
-    id: "tsukesage",
-    label: "付け下げ",
-    description: "控えめな柄付けで、上品に着こなせる略礼装。",
-  },
-  {
-    id: "hakama",
-    label: "袴",
-    description: "卒業式に人気。凛とした佇まいを演出。",
-  },
-  {
-    id: "yukata",
-    label: "浴衣",
-    description: "夏祭りや花火大会に。気軽に楽しめる普段着。",
-  },
-];
+// カテゴリまわりの純粋ロジック。
+//
+// loop 71 でカテゴリマスタを DB へ移したため、ここにカテゴリの実データは持たない
+// （初期データは data/categories.ts、読み取りは lib/category-repository.ts）。
+// DB から取得済みの配列を受け取って扱うヘルパだけを置く。DOM にも Prisma にも
+// 依存しないので、そのまま単体テストできる。
 
-/** ID からカテゴリを引く */
-export function getCategory(id: KimonoCategoryId): KimonoCategory | undefined {
+/** 配列から ID でカテゴリを引く */
+export function findCategory(
+  categories: KimonoCategory[],
+  id: string,
+): KimonoCategory | undefined {
   return categories.find((c) => c.id === id);
 }
 
-/** ID からカテゴリの表示名を引く（見つからなければ ID をそのまま返す） */
-export function getCategoryLabel(id: KimonoCategoryId): string {
-  return getCategory(id)?.label ?? id;
+/** 表示名を引く。見つからなければ ID をそのまま返す（空欄にしない） */
+export function getCategoryLabel(
+  categories: KimonoCategory[],
+  id: string,
+): string {
+  return findCategory(categories, id)?.label ?? id;
+}
+
+/** 表示順（sortOrder → id）に並べ替える。元配列は変更しない */
+export function sortCategories(
+  categories: KimonoCategory[],
+): KimonoCategory[] {
+  return [...categories].sort(
+    (a, b) => a.sortOrder - b.sortOrder || a.id.localeCompare(b.id),
+  );
+}
+
+/**
+ * 新規カテゴリの sortOrder の既定値。
+ * 末尾に来るよう、既存の最大値 + 10 を返す（10刻みにしておくと後から間に挟める）。
+ */
+export function nextSortOrder(categories: KimonoCategory[]): number {
+  if (categories.length === 0) return 10;
+  return Math.max(...categories.map((c) => c.sortOrder)) + 10;
 }

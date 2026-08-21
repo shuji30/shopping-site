@@ -2,17 +2,19 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { categories } from "@/lib/categories";
 import { sortOptions } from "@/lib/kimono-filter";
+import type { KimonoCategory } from "@/lib/types";
 
 interface Props {
+  /** DB から取得したカテゴリマスタ（表示順で並んでいる） */
+  categories: KimonoCategory[];
   active?: string;
   q: string;
   sort: string;
 }
 
 /** 商品一覧のカテゴリ絞り込み・キーワード検索・並び替えコントロール */
-export function KimonoFilters({ active, q, sort }: Props) {
+export function KimonoFilters({ categories, active, q, sort }: Props) {
   const router = useRouter();
   const [text, setText] = useState(q);
 
