@@ -61,6 +61,39 @@ GitHub の Settings → Branches → Add branch protection rule で `master` に
   一時的になりすます。GitHub側にシークレットの登録は不要。
 - 手順: `web/` を Docker ビルド → Artifact Registry へ push
   （タグは `github.sha`）→ `gcloud run deploy` で Cloud Run を更新。
+### DBマイグレーション（loop 74 で自動化）
+
+`gcloud run deploy` の**前**に `web/scripts/migrate-turso.mjs` が走り、未適用の
+`prisma/migrations/*/migration.sql` を Turso へ適用する。**失敗したらそこで停止し、
+デプロイは実行されない**（テーブルが無いまま新コードを本番へ出さないため）。
+
+- **なぜ `prisma migrate deploy` を使わないか**: Prisma は `libsql://` を扱えない。
+  Turso の HTTP API（`/v2/pipeline`）を fetch で直接叩いている。turso CLI も不要。
+- **適用済みの管理**: `_applied_migrations` テーブル（このスクリプト専用の台帳）。
+  Prisma の `_prisma_migrations` とは別物。
+- **初回だけベースラインが必要**: 台帳が空のとき、既存DBに何がすでに適用済みかを
+  スクリプトは知らない。そのまま全件流すと `CREATE TABLE` が既存テーブルに衝突するため、
+  リポジトリ変数 `TURSO_MIGRATION_BASELINE` に「ここまで適用済み」の
+  マイグレーション名を入れる。その分は**実行せず記録だけ**される。
+  未指定かつ台帳が空なら、事故防止のため意図的に停止する。
+
+必要な設定（**人間の作業・一度だけ**）:
+
+| 種別 | 名前 | 値 |
+|---|---|---|
+| Secret | `TURSO_DATABASE_URL` | `turso db show miyabi --url` の出力（`libsql://...`） |
+| Secret | `TURSO_AUTH_TOKEN` | `turso db tokens create miyabi` の出力 |
+| Variable | `TURSO_MIGRATION_BASELINE` | 初回のみ。既存DBに適用済みの最後の名前 |
+
+Settings → Secrets and variables → Actions で登録する。ベースラインは
+台帳ができた後は不要なので、初回のデプロイが通ったら削除してよい。
+
+手元で確認したいときは `--dry-run` を付けると、何を適用するかだけ表示する:
+
+```bash
+TURSO_DATABASE_URL=... TURSO_AUTH_TOKEN=... npx tsx scripts/migrate-turso.mjs --dry-run
+```
+
 - `DATABASE_URL`/`TURSO_AUTH_TOKEN`/`ADMIN_USER`/`ADMIN_PASSWORD` は
   **指定しない**＝既存リビジョンの設定（Secret Manager参照含む）がそのまま
   引き継がれる（`gcloud run deploy` は明示的に上書きしない限り前リビジョンの

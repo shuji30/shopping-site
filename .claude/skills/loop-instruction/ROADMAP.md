@@ -77,7 +77,14 @@
 
 ## デプロイ・インフラ
 
-- [ ] **【最優先】本番マイグレーションの自動化** — 現状 CD（`deploy.yml`）はマイグレーションを
+- [x] **本番マイグレーションの自動化** (loop 74) — `scripts/migrate-turso.mjs` を追加し、
+      CD の `gcloud run deploy` の**前**に実行。Turso の HTTP API を直接叩くので
+      turso CLI も Prisma の libsql 対応も不要。`_applied_migrations` 台帳で
+      未適用のみ適用し、**失敗したらデプロイを中止**する。台帳が空の初回は
+      `TURSO_MIGRATION_BASELINE` の指定を必須にして誤爆を防ぐ。
+      **人間の作業（一度だけ）**: `TURSO_DATABASE_URL`・`TURSO_AUTH_TOKEN` を Secrets に、
+      `TURSO_MIGRATION_BASELINE` を Variables に登録（詳細は docs/CI-CD.md）。
+      〈当初のメモ〉— 現状 CD（`deploy.yml`）はマイグレーションを
       実行せず（Dockerfile の `CMD` も `node server.js` のみ）、スキーマ変更を含む反映のたびに
       Turso への手作業が必要。**loop 71-72 の反映でこれを踏み、本番が全ページ500になった**
       （`Category` テーブルが未作成のまま新コードが動いた）。次を検討する:

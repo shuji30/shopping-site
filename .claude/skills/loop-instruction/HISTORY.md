@@ -5,6 +5,56 @@
 
 ---
 
+## loop 74 — 本番マイグレーションをCDで自動適用する（2026-08-21）
+
+### 経緯
+- loop 73 で最優先に起票した再発防止策。loop 71-72 の反映で本番が全ページ500に
+  なった直接の原因は「CDがマイグレーションを実行しない」ことだったので、そこを塞ぐ。
+
+### やったこと
+- `lib/migration-sql.ts`（新規・純粋関数）: `toHttpUrl`（libsql:// → https://）、
+  `splitSqlStatements`（行コメント除去＋`;`分割）、`sortMigrationNames`、
+  `selectPending`、`resolveBaseline`。
+- `scripts/migrate-turso.mjs`（新規）: Turso の HTTP API（`/v2/pipeline`）を fetch で
+  直接叩き、未適用の migration.sql を順に適用する。**turso CLI も Prisma の
+  libsql 対応も不要**（`prisma migrate deploy` は `libsql://` を扱えない）。
+  適用済みは `_applied_migrations` 台帳で管理。`--dry-run` あり。
+- `.github/workflows/deploy.yml`: `gcloud run deploy` の**前**に上記を実行。
+  **失敗すれば非0で止まり、デプロイは走らない**。
+- `tests/migration-sql.test.ts`: 16件追加（116→132件）。
+- `docs/CI-CD.md`: 仕組みと、人間が一度だけ行う設定（Secrets/Variables）を記載。
+
+### 設計判断
+- **初回のベースラインを必須にした**。既存DBには9件が適用済みだが台帳は空なので、
+  素直に全件流すと `CREATE TABLE "Kimono"` が既存テーブルに衝突して失敗する。
+  `TURSO_MIGRATION_BASELINE` で「ここまで適用済み」を宣言させ、その分は
+  **実行せず記録だけ**する。未指定かつ台帳が空なら意図的に停止する
+  （黙って全件流すほうが危険なため）。打ち間違いも例外にして弾く。
+- **Secrets 未設定なら失敗させる**（スキップしない）。スキップすると loop 71-72 と
+  同じ事故が再発する。失敗してもデプロイが止まるだけで本番は無傷なので、
+  こちらのほうが安全側。
+
+### 検証
+- 実際の Turso には接続できない（この環境に turso CLI が無く、`*.turso.io` へも
+  到達できない）。代わりに **`/v2/pipeline` をモックしたHTTPサーバーを立てて
+  スクリプト全体を通した**。確認した5通り:
+  1. 台帳が空＋baseline未指定 → exit 1 で停止
+  2. baseline が打ち間違い → exit 1（候補一覧を表示）
+  3. baseline=password_reset_tokens → 9件を記録のみ・categories だけ適用 → exit 0
+  4. 2回目の実行 → 「未適用なし」で exit 0（冪等）
+  5. 適用SQLが失敗 → exit 1。落ちたSQLを表示してデプロイを中止
+- ESLint 0・vitest 132件パス・`next build` 成功。
+
+### 気づき・次への申し送り
+- **この変更自体は、Secrets を登録するまで本番反映できない**（登録前にマージすると
+  CDがマイグレーションステップで失敗する）。それは意図した挙動で、
+  「設定漏れに気づかないままデプロイされる」よりよい。PRの「本番反映時の注意」に明記した。
+- モックでの検証は実接続の代わりにならない。初回のCD実行は必ずログを見ること。
+- 実接続を伴う検証手段が無いのは変わっていないので、ROADMAP の
+  「スキーマ変更を含む反映の事前チェック」は残したままにしてある。
+
+---
+
 ## loop 73 — 本番障害の記録とマイグレーション自動化の起票（2026-08-21）
 
 ### 何が起きたか
