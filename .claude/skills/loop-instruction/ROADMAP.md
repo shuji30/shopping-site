@@ -197,6 +197,9 @@
       - 本番反映を PR 経由にする運用へ変更するか判断し、SKILL.md の「Git運用」節に反映
         （PR必須にするなら、CI（lint/test/build）を merge の必須条件にする設定も併せて検討）
       - PR本文にデプロイ後の確認項目（バージョン表示・主要導線）を定型で載せる
+- [x] ループ報告の末尾に完了時刻を表示する規約を SKILL.md に追加 (loop 80) —
+      手順8「報告」＋「ループ完了時刻の表示」節。時刻は推測せず
+      `TZ=Asia/Tokyo date` で取得する、までを規約に含めた
 - [x] Playwright e2e: トップページのPR部分（`scripts/e2e/home-pr.mjs`） (loop 69)
 - [x] Playwright e2e: 管理画面のカテゴリCRUD（`scripts/e2e/admin-categories.mjs`） (loop 72)
 - [x] Playwright e2e: 予約申込フォームの入力検証（`scripts/e2e/checkout-validation.mjs`） (loop 67)
